@@ -56,6 +56,7 @@ int main()
         std::cerr << "failed to change baud rate" << std::endl;
         return 1;
     }
+    /*
 
     for (int id : dynamixel_ids)
     {
@@ -80,11 +81,36 @@ int main()
         print_dynamixel_status(dxl_comm_res, dxl_err, id, "set goal pos");
         
         // TEMP sleep for 5s to settle, replace with reading the present position
-        usleep(5000000);
+        usleep(500000);
 
         // disable torque
         dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 0, &dxl_err);
         print_dynamixel_status(dxl_comm_res, dxl_err, id, "disable torque");
+    }
+    */
+
+    uint16_t ADDR_GOAL_TORQUE = 0x20;
+    uint8_t dxl_err = 0;
+    uint8_t id = 0;
+    int16_t dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 1, &dxl_err);
+    print_dynamixel_status(dxl_comm_res, dxl_err, id, "enable torque");
+
+    while (true)
+    {
+        for (int id : dynamixel_ids) {
+        packet_handler->write2ByteTxRx(port_handler, id, ADDR_GOAL_TORQUE, 1024+100, &dxl_err);
+        print_dynamixel_status(dxl_comm_res, dxl_err, 0, "set goal torque");
+        }
+
+        usleep(500000);
+
+        for (int id : dynamixel_ids) {
+        packet_handler->write2ByteTxRx(port_handler, id, ADDR_GOAL_TORQUE, 0, &dxl_err);
+        print_dynamixel_status(dxl_comm_res, dxl_err, 0, "stop goal torque");
+        }
+
+        usleep(500000);
+
     }
 
     port_handler->closePort();

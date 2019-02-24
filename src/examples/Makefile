@@ -24,7 +24,7 @@
 
 # *** ENTER THE TARGET NAME HERE ***
 TARGET      = hellodynamixel 
-TARGET2 = read_postitions
+TARGET2 = read_positions
 TARGET3 = tripod_gait
 
 # important directories used by assorted rules and other variables
@@ -51,7 +51,6 @@ LIBRARIES  += -lrt
 # Files
 #---------------------------------------------------------------------
 SOURCES = hello_dynamixel.cpp
-    # *** OTHER SOURCES GO HERE ***
 SOURCES2 = read_dyn_pos.cpp
 SOURCES3 = tripod_gait.cpp
 

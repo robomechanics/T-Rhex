@@ -1,11 +1,4 @@
-// pre-down pos (3,4,6) = 3800
-// pre-dowm pos (0,1,2) = 3300
-// post-down pos (3,4,6) = 3300
-// post-down pos (0,1,2) = 3800
-// pre-up pos (3,4,6) = 2000
-// pre-up pos (0,1,2) = 1200
-// post-up pos (3,4,6) = 1200
-// post-up pos (0,1,2) = 2000
+
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -23,33 +16,47 @@ const static uint32_t baudrate = 1000000;
 const static float protocol_version = 1.0;
 const static uint8_t ADDR_MX_TORQUE_ENABLE = 0x18;
 const static uint8_t ADDR_MX_LED_CTL = 0x19;
-const static uint8_t ADDR_MX_GOAL_SET = 0x1E;
+const static uint8_t ADDR_MX_VEL_SET = 0x20;
+const static uint8_t ADDR_MX_GET_POS = 0x24;
 
 static dynamixel::PortHandler *port_handler;
 static dynamixel::PacketHandler *packet_handler;
 const static int dynamixel_ids[] = { 0, 1, 2, 3, 4, 6 };
+const static uint16_t pos_half_step = 1700;
+const static uint16_t pos_ground_step = 3600;
+const static uint16_t step_speed = 100;
+static bool keep_walking = true;
 
-static const uint16_t pre_down_346 = 4000;
-static const uint16_t pre_down_012 = 3000;
-static const uint16_t post_down_346 = 3000;
-static const uint16_t post_down_012 = 4000;
-static const uint16_t pre_up_346 = 2000;
-static const uint16_t pre_up_012 = 1000;
-static const uint16_t post_up_346 = 1000;
-static const uint16_t post_up_012 = 2000;
-
-void signint_handler( int signum )
+void check_dxl_result(int id, uint8_t dxl_err, int16_t dxl_comm_res, std::string step, dynamixel::PacketHandler *ph)
 {
-    for (int id : dynamixel_ids)
+    if (dxl_err || dxl_comm_res != COMM_SUCCESS)
     {
-        uint8_t dxl_err = 0;
-        int16_t dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 0, &dxl_err);
+        std::cerr << "Error performing " << step << " on dxl " << id << ". err=" << ph->getRxPacketError(dxl_err) << " cr=" << ph->getTxRxResult(dxl_comm_res) << std::endl;
     }
-    port_handler->closePort();
-    std::cout << "Closing port" << std::endl;
-    exit(0);
 }
 
+void set_dxl_velocity(int id, uint16_t desired_spd, std::string step, dynamixel::PacketHandler *packet_handler, dynamixel::PortHandler *port_handler)
+{
+    uint8_t dxl_err;
+    int16_t dxl_comm_res;
+    dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, id, ADDR_MX_VEL_SET, desired_spd, &dxl_err);
+    check_dxl_result(1, dxl_err, dxl_comm_res, step, packet_handler);
+}
+
+uint16_t read_dxl_position(int id, std::string step, dynamixel::PacketHandler *packet_handler, dynamixel::PortHandler *port_handler)
+{
+    uint8_t dxl_err;
+    int16_t dxl_comm_res;
+    uint16_t pos;
+    dxl_comm_res = packet_handler->read2ByteTxRx(port_handler, id, ADDR_MX_GET_POS, &pos, &dxl_err);
+    check_dxl_result(1, dxl_err, dxl_comm_res, step, packet_handler);
+
+    return pos;
+}
+void signint_handler( int signum )
+{
+    keep_walking = false;
+}
 
 int main()
 {
@@ -79,10 +86,13 @@ int main()
         return 1;
     }
 
+    uint8_t dxl_err = 0;
+    int16_t dxl_comm_res = 0;
+
     for (int id : dynamixel_ids)
     {
-        uint8_t dxl_err = 0;
-        int16_t dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 1, &dxl_err);
+        dxl_err = 0;
+        dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 1, &dxl_err);
 
         if (dxl_comm_res != COMM_SUCCESS || dxl_err)
         {
@@ -91,72 +101,106 @@ int main()
         usleep(100000);
     }
 
-    uint16_t goal = 0;
+    // take the first step with the 613 tripod
+    std::string step = "init 613 tripod";
+    set_dxl_velocity(1, step_speed, step, packet_handler, port_handler);
+    set_dxl_velocity(3, 1024+step_speed, step, packet_handler, port_handler);
+    set_dxl_velocity(6, 1024+step_speed, step, packet_handler, port_handler);
 
-    while (true)
+    bool s1_done, s3_done, s6_done = false;
+    uint16_t tol = 200;
+
+    while (!(s1_done && s3_done && s6_done))
     {
-        int16_t dxl_comm_res;
-        uint8_t dxl_err;
-        /*
-        // set pre-down for 1,3,6
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 1, ADDR_MX_GOAL_SET, pre_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 3, ADDR_MX_GOAL_SET, pre_down_346, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 6, ADDR_MX_GOAL_SET, pre_down_346, &dxl_err);
-        // set pre-up for 0,2,4
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 0, ADDR_MX_GOAL_SET, pre_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 2, ADDR_MX_GOAL_SET, pre_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 4, ADDR_MX_GOAL_SET, pre_up_346, &dxl_err);
+        uint16_t s1_pos, s3_pos, s6_pos = 0;
 
-        // pause for 0.25s
-        usleep(1000000);
+        step = "wait for 613 tripod";
+        s1_pos = read_dxl_position(1, step, packet_handler, port_handler);
+        s3_pos = read_dxl_position(3, step, packet_handler, port_handler);
+        s6_pos = read_dxl_position(6, step, packet_handler, port_handler);
 
-        // set post-down for 1,3,6
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 1, ADDR_MX_GOAL_SET, post_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 3, ADDR_MX_GOAL_SET, post_down_346, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 6, ADDR_MX_GOAL_SET, post_down_346, &dxl_err);
-        // set post-up for 0,2,4
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 0, ADDR_MX_GOAL_SET, post_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 2, ADDR_MX_GOAL_SET, post_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 4, ADDR_MX_GOAL_SET, post_up_346, &dxl_err);
-
-        // pause for 0.1s
-        usleep(500000);
-
-        // set pre-up for 1,3,6
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 1, ADDR_MX_GOAL_SET, pre_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 3, ADDR_MX_GOAL_SET, pre_up_346, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 6, ADDR_MX_GOAL_SET, pre_up_346, &dxl_err);
-        // set pre-down for 0,2,4
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 0, ADDR_MX_GOAL_SET, pre_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 2, ADDR_MX_GOAL_SET, pre_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 4, ADDR_MX_GOAL_SET, pre_down_346, &dxl_err);
-
-        // pause for 0.25s
-        usleep(1000000);
-
-        // set post-up for 1,3,6
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 1, ADDR_MX_GOAL_SET, post_up_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 3, ADDR_MX_GOAL_SET, post_up_346, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 6, ADDR_MX_GOAL_SET, post_up_346, &dxl_err);
-        // set post-down for 0,2,4
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 0, ADDR_MX_GOAL_SET, post_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 2, ADDR_MX_GOAL_SET, post_down_012, &dxl_err);
-        dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, 4, ADDR_MX_GOAL_SET, post_down_346, &dxl_err);
-
-        // pause for 0.1s
-        usleep(500000);
-        */
-
-       for (int i = 0; i < 2; i++)
-       {
-            dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, dynamixel_ids[i], ADDR_MX_GOAL_SET, goal, &dxl_err);
-       }
-
-       goal += 100;
-       goal = goal % 4096;
-       usleep(1000000);
-
+        if (abs(s1_pos - pos_half_step) < tol)
+        {
+            set_dxl_velocity(1, 0, "stop s1", packet_handler, port_handler);
+            s1_done = true;
+        }
+        if (abs(s3_pos - pos_half_step) < tol)
+        {
+            set_dxl_velocity(3, 0, "stop s3", packet_handler, port_handler);
+            s3_done = true;
+        }
+        if (abs(s6_pos - pos_half_step) < tol)
+        {
+            set_dxl_velocity(6, 0, "stop s6", packet_handler, port_handler);
+            s6_done = true;
+        }
     }
 
+    bool tripod_613_up = true;
+
+    while (keep_walking)
+    {
+        // set the moving speed of both tripods
+        step = "start moving tripods";
+        set_dxl_velocity(0, step_speed, step, packet_handler, port_handler);
+        set_dxl_velocity(1, step_speed, step, packet_handler, port_handler);
+        set_dxl_velocity(2, step_speed, step, packet_handler, port_handler);
+        set_dxl_velocity(3, 1024+step_speed, step, packet_handler, port_handler);
+        set_dxl_velocity(4, 1024+step_speed, step, packet_handler, port_handler);
+        set_dxl_velocity(6, 1024+step_speed, step, packet_handler, port_handler);
+
+        // wait on their completions
+        bool servos_completed[] = {false, false, false, false, false, false};
+        uint16_t completion_positions[6] = {0,0,0,0,0,0};
+        if (tripod_613_up)
+        {
+            completion_positions[0] = pos_half_step;
+            completion_positions[1] = pos_ground_step;
+            completion_positions[2] = pos_half_step;
+            completion_positions[3] = pos_ground_step;
+            completion_positions[4] = pos_half_step;
+            completion_positions[5] = pos_ground_step;
+        }
+        else
+        {
+            completion_positions[0] = pos_ground_step;
+            completion_positions[1] = pos_half_step;
+            completion_positions[2] = pos_ground_step;
+            completion_positions[3] = pos_half_step;
+            completion_positions[4] = pos_ground_step;
+            completion_positions[5] = pos_half_step;
+        }
+
+        step = "wait for tripod completion";
+        while(!(servos_completed[0] && servos_completed[1] && servos_completed[2] && servos_completed[3] && servos_completed[4] && servos_completed[5]))
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                uint16_t pos = read_dxl_position(dynamixel_ids[i], step, packet_handler, port_handler);
+                if (abs(pos - completion_positions[i]) < tol)
+                {
+                    set_dxl_velocity(dynamixel_ids[i], 0, "stop servo " + i, packet_handler, port_handler);
+                    servos_completed[i] = true;
+                }
+            }
+        }
+        std::cout << "finished step" << std::endl;
+
+        // wait for 0.5s before taking another step
+        usleep(500000);
+
+        tripod_613_up = !tripod_613_up;
+    }
+
+    // shutdown
+    for (int id : dynamixel_ids)
+    {
+        set_dxl_velocity(id, 0, "stop servo", packet_handler, port_handler);
+        uint8_t dxl_err = 0;
+        int16_t dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ENABLE, 0, &dxl_err);
+        check_dxl_result(id, dxl_err, dxl_comm_res, "Shutdown", packet_handler);
+    }
+    port_handler->closePort();
+    std::cout << "Closing port" << std::endl;
     return 0;
 }
