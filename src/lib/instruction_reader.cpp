@@ -1,9 +1,9 @@
 #include "instruction_reader.h"
 
-Instruction::Instruction(uint16_t wait_time)
+Instruction::Instruction(uint16_t wait_time_ms)
 {
     this->is_goal_step = false;
-    this->wait_time = wait_time;
+    this->wait_time_ms = wait_time_ms;
 }
 
 Instruction::Instruction(uint16_t goal_positions[NUM_DYNAMIXELS])
@@ -42,10 +42,45 @@ InstructionReader::InstructionReader(std::string config_file)
 std::vector<Instruction*>& InstructionReader::get_instruction_set()
 {
     // open the config file
+    std::ifstream input_stream(this->config_file);
+    std::string line;
+
     // read line by line
-    // create new instruction per line
-    // add it to the set
-    // return our set
+    while (getline(input_stream, line))
+    {
+        // create new instruction per line
+        std::vector<std::string> tokens;
+        std::string buf;
+        std::stringstream linebuf(line);
+        
+        while (linebuf >> buf)
+        {
+            tokens.push_back(buf);
+        }
+
+        Instruction *step;
+
+        int16_t first_entry = std::stoi(tokens.at(0));
+        if (first_entry == -1)
+        {
+            uint16_t wait_time_ms = std::stoi(tokens.at(1));
+            step = new Instruction(wait_time_ms);
+        }
+        else
+        {
+            uint16_t goal_positions[NUM_DYNAMIXELS];
+            for (int i = 0; i < NUM_DYNAMIXELS; i++)
+            {
+                goal_positions[i] = std::stoi(tokens.at(i));
+            }
+
+            step = new Instruction(goal_positions);
+        }
+
+        // add it to the set
+        instruction_set.push_back(step);
+
+    }
 
     return instruction_set;
 }
@@ -53,5 +88,9 @@ std::vector<Instruction*>& InstructionReader::get_instruction_set()
 void InstructionReader::destroy_instruction_set()
 {
     // iterate over the set
-    // destroy each instruction
+    for (Instruction *i : this->instruction_set)
+    {
+        // destroy each instruction
+        delete i;
+    }
 }

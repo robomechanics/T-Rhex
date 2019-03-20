@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 #ifndef INSTR_RDR_H
 #define INSTR_RDR_H
@@ -9,7 +11,7 @@ const static uint8_t NUM_DYNAMIXELS = 6;
 class Instruction
 {
 public:
-    Instruction(uint16_t wait_time);
+    Instruction(uint16_t wait_time_ms);
     Instruction(uint16_t goal_positions[NUM_DYNAMIXELS]);
 
     uint16_t get_wait_time();
@@ -18,7 +20,7 @@ public:
 
 private:
     bool is_goal_step;
-    uint16_t wait_time;
+    uint16_t wait_time_ms;
     uint16_t goal_positions[NUM_DYNAMIXELS];
 };
 
