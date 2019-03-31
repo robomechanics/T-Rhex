@@ -24,7 +24,7 @@ bool Instruction::get_is_goal_step()
 
 uint16_t Instruction::get_wait_time()
 {
-    return this->wait_time;
+    return this->wait_time_ms;
 }
 
 uint16_t* Instruction::get_goal_positions()

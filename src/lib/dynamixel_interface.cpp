@@ -7,14 +7,15 @@ void check_dxl_result(int id, uint8_t dxl_err, int16_t dxl_comm_res)
 {
     if (dxl_err || dxl_comm_res != COMM_SUCCESS)
     {
-        std::cerr << "Error! dxl_err=" ph->getRxPacketError(dxl_err) << " cr=" << ph->getTxRxResult(dxl_comm_res) << std::endl;
+        std::cerr << "Error! dxl_err=" << packet_handler->getRxPacketError(dxl_err) << " cr=" << packet_handler->getTxRxResult(dxl_comm_res) << std::endl;
     }
 }
 
-bool is_inside_array(uint8_t arr[num_reversal], uint8_t e)
+bool is_inside_array(const uint8_t arr[num_reversal], uint8_t e)
 {
-    for (auto c : arr)
+    for (int i = 0; i < num_reversal; i++)
     {
+        uint8_t c = arr[i];
         if (e == c)
         {
             return true;
@@ -23,7 +24,7 @@ bool is_inside_array(uint8_t arr[num_reversal], uint8_t e)
     return false;
 }
 
-int8_t init()
+int8_t dyn_intf_init()
 {
     port_handler = dynamixel::PortHandler::getPortHandler(device_port_path.c_str());
     packet_handler = dynamixel::PacketHandler::getPacketHandler(protocol_version);
@@ -68,7 +69,7 @@ int8_t init()
     return 0;
 }
 
-void set_dxl_velocity(int id, uint16_t desired_spd)
+void set_dxl_velocity(uint8_t id, uint16_t desired_spd)
 {
     uint8_t dxl_err;
     int16_t dxl_comm_res;
@@ -127,7 +128,7 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
 
 }
 
-int8_t shutdown()
+int8_t dyn_intf_shutdown()
 {
     for (int id : dynamixel_ids)
     {

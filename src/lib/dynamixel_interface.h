@@ -8,11 +8,11 @@
 #include <csignal>
 
 #include "dynamixel_sdk.h"
+#include "instruction_reader.h"
 
 #ifndef DYN_INTFACE_H
 #define DYN_INTFACE_H
 
-const uint8_t NUM_DYNAMIXELS = 6;
 const std::string device_port_path = "/dev/ttyUSB0";
 const float protocol_version = 1.0;
 const uint32_t baudrate = 1000000;
@@ -29,9 +29,9 @@ const uint8_t ADDR_MX_LED_CTL = 0x19;
 const uint8_t ADDR_MX_VEL_SET = 0x20;
 const uint8_t ADDR_MX_GET_POS = 0x24;
 
-int8_t init();
-int8_t set_dynamixel_position(uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS]);
-int8_t shutdown();
+int8_t dyn_intf_init();
+int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS]);
+int8_t dyn_intf_shutdown();
 
 
 #endif
