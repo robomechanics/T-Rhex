@@ -31,7 +31,12 @@ class Microcontroller
 public:
     int8_t set_reinit_cmd(bool reinitialize);
     int8_t set_shutdown_cmd(bool shutdown);
-    uint16_t[NUM_DYNAMIXELS] 
+    uint16_t* get_leg_data();
+    Instruction get_curr_inst();
+    int8_t set_instruction_set(std::vector<Instruction> instruction_set);
+    int8_t set_N(uint16_t N);
+    int8_t set_send_new_ins(bool send_new_ins);
+    int8_t set_new_inst_set(std::vector<Instruction> new_inst_set);
 
 private:
     MicrocontrollerState current_state;
