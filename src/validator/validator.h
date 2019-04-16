@@ -22,7 +22,7 @@ class Validator
 {
 public:
     bool get_is_valid();
-    int8_t set_instruction(Instruction instruction);
+    int8_t set_instruction(Instruction *instruction);
     int8_t set_eval_instruction(bool eval_instruction);
 
 private:
