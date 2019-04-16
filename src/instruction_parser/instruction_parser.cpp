@@ -228,3 +228,35 @@ int8_t InstructionParser::parse_wait_instruction()
     ss >> token;
     this->curr_instruction->wait_time_ms = std::stoi(token);
 }
+
+int8_t InstructionParser::set_infile(std::string infile)
+{
+    this->infile = std::ifstream(infile);
+    if (this->infile.is_open())
+    {
+        return InstructionErrCodes::SUCCESS;
+    }
+    return InstructionErrCodes::FILE_NOT_OPEN;
+}
+
+int8_t InstructionParser::set_is_valid_instruction(bool is_valid_instruction)
+{
+    this->is_valid_instruction = is_valid_instruction;
+}
+
+std::vector<Instruction *> InstructionParser::get_instruction_set()
+{
+    return this->instruction_set;
+}
+
+int8_t InstructionParser::set_get_new_inst_set(bool get_new_inst_set)
+{
+    this->get_instruction_set = get_new_inst_set;
+    return SUCCESS;
+}
+
+int8_t InstructionParser::add_instruction_to_set()
+{
+    this->instruction_set.push_back(this->curr_instruction);
+    return SUCCESS;
+}

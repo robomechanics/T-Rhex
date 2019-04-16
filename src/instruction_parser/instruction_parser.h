@@ -58,8 +58,8 @@ class InstructionParser
 public:
     int8_t set_infile(std::string infile);
     int8_t set_is_valid_instruction(bool is_valid_instruction);
-    std::vector<Instruction> get_instruction_set();
-    int8_t get_new_inst_set(bool get_new_inst_set);
+    std::vector<Instruction *> get_instruction_set();
+    int8_t set_get_new_inst_set(bool get_new_inst_set);
 
     InstructionParser();
     void tick();
