@@ -8,6 +8,9 @@
 #ifndef VALIDATOR_H
 #define VALIDATOR_H
 
+#include <cstdint>
+#include "instruction_parser/instruction_parser.h"
+
 enum ValidatorState
 {
     IDLE,
@@ -17,8 +20,17 @@ enum ValidatorState
 
 class Validator
 {
+public:
+    bool get_is_valid();
+    int8_t set_instruction(Instruction instruction);
+    int8_t set_eval_instruction(bool eval_instruction);
+
 private:
     ValidatorState current_state;
+
+    bool is_valid;
+    Instruction instruction;
+    bool eval_instruction;
 };
 
 #endif
