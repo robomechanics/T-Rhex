@@ -5,6 +5,9 @@
  * Last modified 4/15/2019
  */
 
+#ifndef NETW_INTF_H
+#define NETW_INTF_H
+
 enum NetInterfaceState
 {
     INIT,
@@ -19,4 +22,6 @@ class NetworkInterface
 {
 private:
     NetInterfaceState current_state;
-}
+};
+
+#endif

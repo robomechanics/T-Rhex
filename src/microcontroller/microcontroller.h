@@ -6,6 +6,9 @@
  * 
  */
 
+#ifndef MICRO_H
+#define MICRO_H
+
 enum MicrocontrollerState
 {
     INIT,
@@ -22,3 +25,5 @@ class Microcontroller
 private:
     MicrocontrollerState current_state;
 };
+
+#endif
