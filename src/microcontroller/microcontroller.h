@@ -31,6 +31,7 @@ class Microcontroller
 public:
     int8_t set_reinit_cmd(bool reinitialize);
     int8_t set_shutdown_cmd(bool shutdown);
+    uint16_t[NUM_DYNAMIXELS] 
 
 private:
     MicrocontrollerState current_state;
