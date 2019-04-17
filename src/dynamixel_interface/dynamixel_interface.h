@@ -14,11 +14,10 @@
 #include "config/config.h"
 #include "instruction_parser/instruction_parser.h"
 
-enum DynInterfaceState
+enum DynInterfaceState : uint8_t
 {
     INIT,
     IDLE,
-    SET_BAUD,
     SEND_INSTR,
     READ_DATA,
     STOP_MOTORS,
@@ -38,11 +37,14 @@ public:
     bool *get_finished();
     int8_t set_shutdown(bool shutdown);
 
+    DynamixelInterface();
+    void tick();
+
 private:
     DynInterfaceState current_state;
 
-    dynamixel::PortHandler port_handler;
-    dynamixel::PacketHandler adapter;
+    dynamixel::PortHandler *port_handler;
+    dynamixel::PacketHandler *adapter;
     bool cmd_finished;
     bool set_baud_rate;
     uint32_t desired_baud;
@@ -50,6 +52,10 @@ private:
     uint16_t pos_data[NUM_DYNAMIXELS] pos_data;
     bool finished[NUM_DYNAMIXELS];
     bool shutdown;
+
+    int8_t errcode;
+    
+    const std::string port_path = "/dev/ttyUSB0";
 };
 
 #endif
