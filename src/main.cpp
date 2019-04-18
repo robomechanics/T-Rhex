@@ -14,6 +14,7 @@ void sigint_handler( int signum )
 
 int main(int argc, char **argv)
 {
+    signal(SIGINT, sigint_handler);
 
     if (argc != expected_arg_cnt)
     {
