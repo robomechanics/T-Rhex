@@ -22,10 +22,13 @@ int main(int argc, char **argv)
     }
 
     std::string filename = std::string(argv[1]);
+
+    std::cout << "Using file " << filename << std::endl;
+
     InstructionReader reader(filename);
     std::vector<Instruction*> instructions = reader.get_instruction_set();
 
-    // dyn_intf_init();
+    dyn_intf_init();
 
     while (run_instructions)
     {

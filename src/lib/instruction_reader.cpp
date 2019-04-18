@@ -48,6 +48,7 @@ std::vector<Instruction*>& InstructionReader::get_instruction_set()
     // read line by line
     while (getline(input_stream, line))
     {
+        std::cout << "Read line " << line << std::endl;
         // create new instruction per line
         std::vector<std::string> tokens;
         std::string buf;
@@ -63,11 +64,13 @@ std::vector<Instruction*>& InstructionReader::get_instruction_set()
         int16_t first_entry = std::stoi(tokens.at(0));
         if (first_entry == -1)
         {
+            std::cout << "Parsed wait instruction" << std::endl;
             uint16_t wait_time_ms = std::stoi(tokens.at(1));
             step = new Instruction(wait_time_ms);
         }
         else
         {
+            std::cout << "Parsed goal instruction" << std::endl;
             uint16_t goal_positions[NUM_DYNAMIXELS];
             for (int i = 0; i < NUM_DYNAMIXELS; i++)
             {
