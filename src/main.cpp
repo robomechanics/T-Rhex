@@ -56,6 +56,8 @@ int main(int argc, char **argv)
         }
     }
 
+    dyn_intf_shutdown();
+
     reader.destroy_instruction_set();
 
     return 0;

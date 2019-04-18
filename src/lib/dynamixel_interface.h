@@ -23,7 +23,7 @@ const uint16_t goal_tolerance = 100;
 const uint8_t dynamixel_ids[] = { 0, 1, 2, 3, 4, 6 };
 const uint8_t reversal_ids[] = {1, 3, 6};
 const uint8_t num_reversal = 3;
-const int16_t dynamixel_offsets[] = { 0, 2048, 1024, 1024, 0, 0 };
+const int16_t dynamixel_offsets[] = { 150, 2277, 1069, 855, 211, 339 };
 
 const uint8_t ADDR_MX_TORQUE_ON = 0x18;
 const uint8_t ADDR_MX_LED_CTL = 0x19;
