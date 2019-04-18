@@ -102,26 +102,34 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         current_positions[i] = read_dynamixel_position(id[i]);
-        set_dxl_velocity(id[i], 10);
+        set_dxl_velocity(id[i], step_speed);
     }
 
     uint8_t num_dxls_left = 6;
+    bool finished[] = {false, false, false, false, false, false};
     while (num_dxls_left)
     {
+	std::cout << "Adjusted Positions: ";
         // iterate over each servo and see if it's gotten to its destination
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
             current_positions[i] = read_dynamixel_position(id[i]);
             uint16_t adjusted_pos = (current_positions[i] + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
-            if (abs(adjusted_pos - goal_position[i]) < goal_tolerance)
+            if (abs(adjusted_pos - goal_position[i]) < goal_tolerance && finished[i] == false)
             {
+		    finished[i] = true;
                 num_dxls_left--;
                 set_dxl_velocity(id[i], 0);
+		std::cout << "Dynamixel " << std::to_string(id[i]) << " finished" << std::endl;
             }
+
+	    std::cout << std::to_string(adjusted_pos) << " ";
         }
+	std::cout << std::endl;
 
         usleep(100000);
     }
+    std::cout << "Finished Step" << std::endl;
 
     // return success or fail
     return 0;

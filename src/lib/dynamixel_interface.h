@@ -17,9 +17,9 @@ const std::string device_port_path = "/dev/ttyUSB0";
 const float protocol_version = 1.0;
 const uint32_t baudrate = 1000000;
 
-const uint16_t step_speed = 100;
+const uint16_t step_speed = 90;
 const uint16_t vel_scale = 10;
-const uint16_t goal_tolerance = 100;
+const uint16_t goal_tolerance = 150;
 const uint8_t dynamixel_ids[] = { 0, 1, 2, 3, 4, 6 };
 const uint8_t reversal_ids[] = {3, 4, 6};
 const uint8_t num_reversal = 3;

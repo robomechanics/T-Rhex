@@ -38,7 +38,6 @@ int main(int argc, char **argv)
             if (instruction->get_is_goal_step())
             {
                 // run goal step code
-                set_dynamixel_positions(dynamixel_ids, instruction->get_goal_positions());
                 std::cout << "Goal positions: ";
                 uint16_t *poses = instruction->get_goal_positions();
                 for (uint8_t i = 0; i < NUM_DYNAMIXELS; i++)
@@ -46,6 +45,7 @@ int main(int argc, char **argv)
                     std::cout << std::to_string(poses[i]) << " ";
                 }
                 std::cout << std::endl;
+                set_dynamixel_positions(dynamixel_ids, instruction->get_goal_positions());
             }
             else
             {
