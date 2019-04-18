@@ -12,7 +12,7 @@
 #include "instruction_parser/instruction_parser.h"
 #include "config/config.h"
 
-enum ValidatorState
+enum ValidatorState : uint8_t
 {
     IDLE,
     EVAL_GOAL,

@@ -88,10 +88,6 @@ void InstructionParser::tick()
 
         case InstructionState::VALIDATE:
         {
-            // use `validator` to determine if `curr_instruction` `is_valid_instruction`
-
-            validator.set_instruction(this->curr_instruction);
-            validator.set_eval_instruction(true);
             this->current_state = InstructionState::VALIDATE_HOLD;
 
             break;

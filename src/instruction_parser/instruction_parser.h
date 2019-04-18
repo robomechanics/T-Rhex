@@ -18,7 +18,6 @@
 #include <cstdlib>
 
 #include "config/config.h"
-#include "validator/validator.h"
 
 enum InstructionState : uint8_t
 {
@@ -73,7 +72,6 @@ private:
     bool is_valid_instruction;
     std::vector<Instruction*> instruction_set;
     bool GET_NEW_INST_SET;
-    Validator validator;
 
     int8_t errcode;
 
