@@ -33,7 +33,7 @@ const uint8_t ADDR_MX_GET_POS = 0x24;
 const uint16_t DYN_ROTATION_TICKS = 4096;
 
 int8_t dyn_intf_init();
-int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS]);
+int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS]);
 int8_t dyn_intf_shutdown();
 
 

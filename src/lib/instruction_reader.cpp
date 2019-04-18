@@ -69,12 +69,17 @@ std::vector<Instruction*>& InstructionReader::get_instruction_set()
         else
         {
             uint16_t goal_positions[NUM_DYNAMIXELS];
+            uint16_t goal_velocities[NUM_DYNAMIXELS];
             for (int i = 0; i < NUM_DYNAMIXELS; i++)
             {
                 goal_positions[i] = std::stoi(tokens.at(i));
             }
+            for (int i = NUM_DYNAMIXELS; i < NUM_DYNAMIXELS + NUM_DYNAMIXELS; i++)
+            {
+                goal_velocities[i] = std::stoi(tokens.at(i));
+            }
 
-            step = new Instruction(goal_positions);
+            step = new Instruction(goal_positions, goal_velocities);
         }
 
         // add it to the set

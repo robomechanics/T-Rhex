@@ -94,7 +94,7 @@ uint16_t read_dynamixel_position(uint8_t id)
     return pos;
 }
 
-int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS])
+int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS])
 {
 
     // setup array for the completion
@@ -102,7 +102,7 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         current_positions[i] = read_dynamixel_position(id[i]);
-        set_dxl_velocity(id[i], step_speed);
+        set_dxl_velocity(id[i], goal_velocities[i]);
     }
 
     uint8_t num_dxls_left = 6;

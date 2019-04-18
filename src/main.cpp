@@ -45,7 +45,7 @@ int main(int argc, char **argv)
                     std::cout << std::to_string(poses[i]) << " ";
                 }
                 std::cout << std::endl;
-                set_dynamixel_positions(dynamixel_ids, instruction->get_goal_positions());
+                set_dynamixel_positions(dynamixel_ids, instruction->get_goal_positions(), instruction->get_goal_velocities());
             }
             else
             {

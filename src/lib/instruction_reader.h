@@ -12,16 +12,18 @@ class Instruction
 {
 public:
     Instruction(uint16_t wait_time_ms);
-    Instruction(uint16_t goal_positions[NUM_DYNAMIXELS]);
+    Instruction(uint16_t goal_positions[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS]);
 
     uint16_t get_wait_time();
     bool get_is_goal_step();
     uint16_t *get_goal_positions();
+    uint16_t *get_goal_velocities();
 
 private:
     bool is_goal_step;
     uint16_t wait_time_ms;
     uint16_t goal_positions[NUM_DYNAMIXELS];
+    uint16_t goal_velocities[NUM_DYNAMIXELS];
 };
 
 class InstructionReader
