@@ -111,17 +111,16 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
         // iterate over each servo and see if it's gotten to its destination
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
-	    std::cout << "num dyns = " << std::to_string(num_dxls_left) << std::endl;
-            // todo account for offset
             current_positions[i] = read_dynamixel_position(id[i]);
-            if (abs(current_positions[i] - goal_position[i]) < goal_tolerance)
+            uint16_t adjusted_pos = (current_positions[i] + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
+            if (abs(adjusted_pos - goal_position[i]) < goal_tolerance)
             {
                 num_dxls_left--;
                 set_dxl_velocity(id[i], 0);
             }
         }
 
-	usleep(100000);
+        usleep(100000);
     }
 
     // return success or fail
