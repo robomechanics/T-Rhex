@@ -102,6 +102,7 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         current_positions[i] = read_dynamixel_position(id[i]);
+        set_dxl_velocity(id[i], step_speed);
     }
 
     uint8_t num_dxls_left = 6;
@@ -110,18 +111,12 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
         // iterate over each servo and see if it's gotten to its destination
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
+            // todo account for offset
             current_positions[i] = read_dynamixel_position(id[i]);
-//            uint16_t pos = (current_positions[i] + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
-//            if (abs(pos - goal_position[i]) < goal_tolerance)
             if (abs(current_positions[i] - goal_position[i]) < goal_tolerance)
             {
-                set_dxl_velocity(id[i], 0);
                 num_dxls_left--;
-            }
-            else
-            {
-//                set_dxl_velocity(id[i], abs(current_positions[i] - goal_position[i]) / vel_scale);
-                set_dxl_velocity(id[i], step_speed);
+                set_dxl_velocity(id[i], 0);
             }
         }
     }
