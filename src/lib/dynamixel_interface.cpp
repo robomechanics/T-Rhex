@@ -2,6 +2,9 @@
 
 static dynamixel::PortHandler *port_handler;
 static dynamixel::PacketHandler *packet_handler;
+static dynamixel::GroupSyncWrite group_sync_write_te;
+static dynamixel::GroupSyncWrite group_pos_sync;
+static dynamixel::GroupBulkRead group_bulk_read;
 
 void check_dxl_result(int id, uint8_t dxl_err, int16_t dxl_comm_res)
 {
@@ -28,6 +31,18 @@ int8_t dyn_intf_init()
 {
     port_handler = dynamixel::PortHandler::getPortHandler(device_port_path.c_str());
     packet_handler = dynamixel::PacketHandler::getPacketHandler(protocol_version);
+    group_sync_write_te(port_handler, packet_handler, ADDR_MX_TORQUE_ENABLE, 1);
+    goal_pos_sync(port_handler, packet_handler, ADDR_MX_GOAL_TORQUE, 2);
+    group_bulk_read(port_handler, packet_handler);
+
+    for (int id : dynamixel_ids)
+    {
+        bool success = group_bulk_read.addParam(id, ADDR_MX_GET_POS, 2);
+        if (!success)
+        {
+            std::cerr << "Unable to add to reader" << std::endl;
+        }
+    }
 
     if (port_handler->openPort())
     {
@@ -51,17 +66,18 @@ int8_t dyn_intf_init()
     
     uint8_t dxl_err;
     int16_t dxl_comm_res;
+    uint8_t torque_enable = 1;
     for (int id : dynamixel_ids)
     {
-        dxl_err = 0;
-        dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ON, 1, &dxl_err);
-
-        if (dxl_comm_res != COMM_SUCCESS || dxl_err)
+        bool add_param_success = group_sync_write_te.addParam(id, &torque_enable);
+        if (!add_param_success)
         {
-            std::cerr << "error: " << id << ":" << dxl_comm_res << ", " << packet_handler->getRxPacketError(dxl_err) << std::endl;
+            std::cerr << "failed to add param" << std::endl;
         }
-        usleep(100000);
     }
+
+    check_dxl_result(0, 0, group_sync_write_te.txPacket());
+    group_sync_write_te.clearParam();
 
     // set all the dynamixels to straight up
     uint16_t starting_positions[NUM_DYNAMIXELS] = {0};
@@ -70,80 +86,85 @@ int8_t dyn_intf_init()
     return 0;
 }
 
-void set_dxl_velocity(uint8_t id, uint16_t desired_spd)
-{
-    uint8_t dxl_err;
-    int16_t dxl_comm_res;
-
-    if (is_inside_array(reversal_ids, id))
-    {
-        desired_spd += 1024;
-    }
-
-    dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, id, ADDR_MX_VEL_SET, desired_spd, &dxl_err);
-    check_dxl_result(id, dxl_err, dxl_comm_res);
-}
-
-uint16_t read_dynamixel_position(uint8_t id)
-{
-    uint8_t dxl_err;
-    int16_t dxl_comm_res;
-    uint16_t pos;
-    dxl_comm_res = packet_handler->read2ByteTxRx(port_handler, id, ADDR_MX_GET_POS, &pos, &dxl_err);
-    check_dxl_result(id, dxl_err, dxl_comm_res);
-
-    return pos;
-}
-
 int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS])
 {
 
-    // setup array for the completion
-    uint16_t current_positions[NUM_DYNAMIXELS];
+    // command them to the velocities
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
-        current_positions[i] = read_dynamixel_position(id[i]);
-        set_dxl_velocity(id[i], goal_velocities[i]);
+        uint16_t dyn_vel = 0;
+        if (is_inside_array(reversal_ids, dynamixel_ids[i]))
+        {
+            dyn_vel = goal_velocities[i] + 1024;
+        }
+        else
+        {
+            dyn_vel = goal_velocities[i];
+        }
+        uint8_t vel_data[2] = { DXL_LOBYTE(dyn_vel), DXL_HIBYTE(dyn_vel) };
+
+        bool success = goal_pos_sync.addParam(dynamixel_ids[i], vel_data);
+
+        if (!success)
+        {
+            std::cerr << "couldn't add vel param" << std::endl;
+        }
     }
 
-    uint8_t num_dxls_left = 6;
+    check_dxl_result(0, 0, group_pos_sync.txPacket());
+    group_pos_sync.clearParam();
+
+    uint16_t current_positions[NUM_DYNAMIXELS];
+
+    bool all_dyns_finished = false;
     bool finished[] = {false, false, false, false, false, false};
-    while (num_dxls_left)
+    while (!all_dyns_finished)
     {
-	std::cout << "Adjusted Positions: ";
-        // iterate over each servo and see if it's gotten to its destination
+        check_dxl_result(0, 0, group_bulk_read.txRxPacket());
+
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
-            current_positions[i] = read_dynamixel_position(id[i]);
-            uint16_t adjusted_pos = (current_positions[i] + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
-            if (abs(adjusted_pos - goal_position[i]) < goal_tolerance && finished[i] == false)
+            uint8_t dxl_err;
+            int16_t dxl_comm_res = 0;
+            uint16_t curr_pos = group_bulk_read.getData(dynamixel_ids[i], ADDR_MX_GET_POS, 2);
+            uint16_t adjusted_pos = (current_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
+            if (abs(adjusted_pos - goal_position[i]) < goal_tolerance && !finished[i])
             {
-		    finished[i] = true;
-                num_dxls_left--;
-                set_dxl_velocity(id[i], 0);
-		std::cout << "Dynamixel " << std::to_string(id[i]) << " finished" << std::endl;
+                finished[i] = true;
+                packet_handler->write2ByteTxRx(port_handler, dynamixel_ids[i], ADDR_MX_GOAL_TORQUE, 0, &dxl_err);
+                print_dynamixel_status(dxl_comm_res, dxl_err, dynamixel_ids[i], "stop goal torque");
+
+                all_dyns_finished = true;
+                for (int i = 0; i < NUM_DYNAMIXELS; i++)
+                {
+                    if (!finished[i])
+                    {
+                        all_dyns_finished = false;
+                    }
+                }
             }
-
-	    std::cout << std::to_string(adjusted_pos) << " ";
         }
-	std::cout << std::endl;
 
-        usleep(100000);
+        usleep(10 * 1000);
+    
     }
-    std::cout << "Finished Step" << std::endl;
+
+    std::cout << "finished step" << std::endl;
 
     // return success or fail
     return 0;
-
 }
 
 int8_t dyn_intf_shutdown()
 {
     for (int id : dynamixel_ids)
     {
-        uint8_t dxl_err = 0;
-        int16_t dxl_comm_res = packet_handler->write1ByteTxRx(port_handler, id, ADDR_MX_TORQUE_ON, 0, &dxl_err);
-        check_dxl_result(id, dxl_err, dxl_comm_res);
+        uint8_t disable = 0;
+        bool add_param_success = group_sync_write_te.addParam(id, &disable);
+        if (!add_param_success)
+        {
+            std::cerr << "failed to add param" << std::endl;
+        }
     }
     port_handler->closePort();
     std::cout << "Closing port" << std::endl;
