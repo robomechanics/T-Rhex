@@ -90,9 +90,10 @@ int main(int argc, char **argv)
         std::cerr << "failed to set baud rate" << std::endl;
     }
 
+    uint8_t torque_en_data[1] = {1};
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
-        bool add_param_success = group_sync_write_te.addParam(dynamixel_ids[i], 1);
+        bool add_param_success = group_sync_write_te.addParam(dynamixel_ids[i], torque_en_data);
         if (!add_param_success)
         {
             std::cerr << "failed to add param" << std::endl;
@@ -116,7 +117,9 @@ int main(int argc, char **argv)
             {
                 dyn_vel += vel;
             }
-            bool success = goal_pos_sync.addParam(dynamixel_ids[i], dyn_vel);
+            uint8_t vel_data[2] = { DXL_LOBYTE(dyn_vel), DXL_HIBYTE(dyn_vel) };
+
+            bool success = goal_pos_sync.addParam(dynamixel_ids[i], vel_data);
 
             if (!success)
             {
@@ -169,7 +172,8 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
-        bool add_param_success = group_sync_write_te.addParam(dynamixel_ids[i], 0);
+        uint8_t disable = 0;
+        bool add_param_success = group_sync_write_te.addParam(dynamixel_ids[i], &disable);
         if (!add_param_success)
         {
             std::cerr << "failed to add param" << std::endl;

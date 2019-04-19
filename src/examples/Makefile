@@ -58,7 +58,7 @@ SOURCES4 = sync_write_example.cpp
 OBJECTS  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES)))))
 OBJECTS2  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES2)))))
 OBJECTS3  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES3)))))
-OBJECTS3  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES3)))))
+OBJECTS4  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES4)))))
 #OBJETCS += *** ADDITIONAL STATIC LIBRARIES GO HERE ***
 
 
