@@ -65,7 +65,8 @@ int8_t dyn_intf_init()
 
     // set all the dynamixels to straight up
     uint16_t starting_positions[NUM_DYNAMIXELS] = {0};
-    set_dynamixel_positions(dynamixel_ids, starting_positions);
+    uint16_t starting_velocities[NUM_DYNAMIXELS] = {step_speed, step_speed, step_speed, step_speed, step_speed, step_speed};
+    set_dynamixel_positions(dynamixel_ids, starting_positions, starting_velocities);
     return 0;
 }
 

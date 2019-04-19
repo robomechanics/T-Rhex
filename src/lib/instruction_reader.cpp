@@ -6,13 +6,14 @@ Instruction::Instruction(uint16_t wait_time_ms)
     this->wait_time_ms = wait_time_ms;
 }
 
-Instruction::Instruction(uint16_t goal_positions[NUM_DYNAMIXELS])
+Instruction::Instruction(uint16_t goal_positions[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS])
 {
     this->is_goal_step = true;
 
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         this->goal_positions[i] = goal_positions[i];
+	this->goal_velocities[i] = goal_velocities[i];
     }
 
 }
@@ -32,6 +33,10 @@ uint16_t* Instruction::get_goal_positions()
     return this->goal_positions;
 }
 
+uint16_t* Instruction::get_goal_velocities()
+{
+    return this->goal_velocities;
+}
 
 
 InstructionReader::InstructionReader(std::string config_file)
@@ -76,7 +81,7 @@ std::vector<Instruction*>& InstructionReader::get_instruction_set()
             }
             for (int i = NUM_DYNAMIXELS; i < NUM_DYNAMIXELS + NUM_DYNAMIXELS; i++)
             {
-                goal_velocities[i] = std::stoi(tokens.at(i));
+                goal_velocities[i-NUM_DYNAMIXELS] = std::stoi(tokens.at(i));
             }
 
             step = new Instruction(goal_positions, goal_velocities);
