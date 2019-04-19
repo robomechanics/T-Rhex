@@ -26,6 +26,7 @@
 TARGET      = hellodynamixel 
 TARGET2 = read_positions
 TARGET3 = tripod_gait
+TARGET4 = sync_write
 
 # important directories used by assorted rules and other variables
 DIR_DXL    = ../../DynamixelSDK/c++
@@ -52,9 +53,11 @@ LIBRARIES  += -lrt
 SOURCES = hello_dynamixel.cpp
 SOURCES2 = read_dyn_pos.cpp
 SOURCES3 = tripod_gait.cpp
+SOURCES4 = sync_write_example.cpp
 
 OBJECTS  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES)))))
 OBJECTS2  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES2)))))
+OBJECTS3  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES3)))))
 OBJECTS3  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES3)))))
 #OBJETCS += *** ADDITIONAL STATIC LIBRARIES GO HERE ***
 
@@ -70,6 +73,9 @@ $(TARGET2): make_directory $(OBJECTS2)
 
 $(TARGET3): make_directory $(OBJECTS3) 
 	$(LNKCC) $(LNKFLAGS) $(OBJECTS3) -o $(TARGET3) $(LIBRARIES)
+
+$(TARGET4): make_directory $(OBJECTS4) 
+	$(LNKCC) $(LNKFLAGS) $(OBJECTS4) -o $(TARGET4) $(LIBRARIES)
 
 all: $(TARGET)
 
