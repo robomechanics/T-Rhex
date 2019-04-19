@@ -8,7 +8,7 @@
 
 const static std::string device_port_path = "/dev/ttyUSB0";
 const static uint32_t baudrate = 1000 * 1000;
-const static float protocol_version - 1.0;
+const static float protocol_version = 1.0;
 const static uint8_t ADDR_MX_TORQUE_ENABLE = 0x18;
 const static uint8_t ADDR_MX_GOAL_TORQUE = 0x20;
 const static uint8_t ADDR_MX_GET_POS = 0x24;
@@ -16,6 +16,7 @@ static bool send_vel = true;
 
 const static uint8_t dynamixel_ids[] = { 0, 1, 2, 3, 4, 6 };
 const static uint8_t reversal_ids[] = {3, 4, 6};
+const static uint8_t num_reversal = 3;
 const static uint8_t NUM_DYNAMIXELS = 6;
 static uint16_t goal_pos = 0;
 const static uint16_t goal_step = 1000;
@@ -53,8 +54,7 @@ void signint_handler( int signum )
 }
 
 
-
-int main(int argc, char **argv)
+int main()
 {
     dynamixel::PortHandler *port_handler = dynamixel::PortHandler::getPortHandler(device_port_path.c_str());
     dynamixel::PacketHandler *packet_handler = dynamixel::PacketHandler::getPacketHandler(protocol_version);
