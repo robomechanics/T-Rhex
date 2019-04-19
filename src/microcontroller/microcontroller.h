@@ -15,7 +15,7 @@
 #include "instruction_parser/instruction_parser.h"
 #include "config/config.h"
 
-enum MicrocontrollerState
+enum MicrocontrollerState : uint8_t
 {
     INIT,
     CMD,
@@ -25,6 +25,11 @@ enum MicrocontrollerState
     WAIT_FOR_COMP,
     INVALID
 };
+
+enum MicrocontrollerErrorCodes : int8_t
+{
+    SUCCESS = 0,
+}
 
 class Microcontroller
 {
@@ -38,6 +43,9 @@ public:
     int8_t set_send_new_ins(bool send_new_ins);
     int8_t set_new_inst_set(std::vector<Instruction> new_inst_set);
 
+    Microcontroller();
+    void tick();
+
 private:
     MicrocontrollerState current_state;
 
@@ -50,12 +58,14 @@ private:
     uint16_t leg_data[NUM_DYNAMIXELS];
     Instruction curr_ins;
     bool curr_ins_finished;
-    std::vector<Instruction> inst_set;
+    std::vector<Instruction *> inst_set;
     uint16_t N;
     bool send_new_ins;
     Instruction idle_cmd;
     std::vector<Instruction> new_inst_set;
     Instruction shutdown_cmd;
+
+    int errcode;
 };
 
 #endif
