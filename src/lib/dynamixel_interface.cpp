@@ -1,10 +1,10 @@
 #include "dynamixel_interface.h"
 
-static dynamixel::PortHandler *port_handler;
-static dynamixel::PacketHandler *packet_handler;
-static dynamixel::GroupSyncWrite group_sync_write_te;
-static dynamixel::GroupSyncWrite group_pos_sync;
-static dynamixel::GroupBulkRead group_bulk_read;
+static dynamixel::PortHandler *port_handler = dynamixel::PortHandler::getPortHandler(device_port_path.c_str());
+static dynamixel::PacketHandler *packet_handler = dynamixel::PacketHandler::getPacketHandler(protocol_version);
+static dynamixel::GroupSyncWrite group_sync_write_te(port_handler, packet_handler, ADDR_MX_TORQUE_ON, 1);
+static dynamixel::GroupSyncWrite goal_pos_sync(port_handler, packet_handler, ADDR_MX_VEL_SET, 2);
+static dynamixel::GroupBulkRead group_bulk_read(port_handler, packet_handler);;
 
 void check_dxl_result(int id, uint8_t dxl_err, int16_t dxl_comm_res)
 {
@@ -29,11 +29,6 @@ bool is_inside_array(const uint8_t arr[num_reversal], uint8_t e)
 
 int8_t dyn_intf_init()
 {
-    port_handler = dynamixel::PortHandler::getPortHandler(device_port_path.c_str());
-    packet_handler = dynamixel::PacketHandler::getPacketHandler(protocol_version);
-    group_sync_write_te(port_handler, packet_handler, ADDR_MX_TORQUE_ENABLE, 1);
-    goal_pos_sync(port_handler, packet_handler, ADDR_MX_GOAL_TORQUE, 2);
-    group_bulk_read(port_handler, packet_handler);
 
     for (int id : dynamixel_ids)
     {
@@ -64,8 +59,6 @@ int8_t dyn_intf_init()
         return 2;
     }
     
-    uint8_t dxl_err;
-    int16_t dxl_comm_res;
     uint8_t torque_enable = 1;
     for (int id : dynamixel_ids)
     {
@@ -114,8 +107,7 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
     check_dxl_result(0, 0, group_pos_sync.txPacket());
     group_pos_sync.clearParam();
 
-    uint16_t current_positions[NUM_DYNAMIXELS];
-
+    // wait for completions
     bool all_dyns_finished = false;
     bool finished[] = {false, false, false, false, false, false};
     while (!all_dyns_finished)
@@ -127,7 +119,7 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
             uint8_t dxl_err;
             int16_t dxl_comm_res = 0;
             uint16_t curr_pos = group_bulk_read.getData(dynamixel_ids[i], ADDR_MX_GET_POS, 2);
-            uint16_t adjusted_pos = (current_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
+            uint16_t adjusted_pos = (curr_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
             if (abs(adjusted_pos - goal_position[i]) < goal_tolerance && !finished[i])
             {
                 finished[i] = true;
