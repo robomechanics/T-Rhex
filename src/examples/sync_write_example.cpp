@@ -21,7 +21,7 @@ const static uint8_t NUM_DYNAMIXELS = 6;
 static uint16_t goal_pos = 0;
 const static uint16_t goal_step = 1000;
 const static uint16_t DYN_ROTATION_TICKS = 4096;
-const static uint16_t vel = 100;
+const static uint16_t vel = 200;
 
 void print_dynamixel_status(int dxl_comm_result, int dxl_err, int id, std::string cmd)
 {
@@ -100,7 +100,7 @@ int main()
         }
     }
 
-    print_dynamixel_status(group_sync_write_te.tx_packet(), 0, 7, "torque enable");
+    print_dynamixel_status(group_sync_write_te.txPacket(), 0, 7, "torque enable");
     group_sync_write_te.clearParam();
 
     while (send_vel)
@@ -108,7 +108,7 @@ int main()
 
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
-            uint16_t dyn_vel = rand() % 100;
+            uint16_t dyn_vel = rand() % 200;
             if (is_inside_array(reversal_ids, dynamixel_ids[i]))
             {
                 dyn_vel += vel + 1024;
@@ -140,8 +140,8 @@ int main()
             for (int i = 0; i < NUM_DYNAMIXELS; i++)
             {
                 uint8_t dxl_err;
-                int16_t dxl_comm_res;
-                uint16_t curr_pos = group_bullk_read.getData(dynamixel_ids[i], ADDR_MX_GET_POS, 2);
+                int16_t dxl_comm_res = 0;
+                uint16_t curr_pos = group_bulk_read.getData(dynamixel_ids[i], ADDR_MX_GET_POS, 2);
                 if (abs(curr_pos - goal_pos) < 100 && !finished[i])
                 {
                     finished[i] = true;
@@ -159,14 +159,14 @@ int main()
                 }
             }
 
-            usleep(100 * 1000);
+            usleep(10 * 1000);
         
         }
 
         goal_pos += goal_step;
         goal_pos = goal_pos % DYN_ROTATION_TICKS;
 
-        usleep(5 * 1000 * 1000);
+        usleep(500 * 1000);
 
     }
 
@@ -180,7 +180,7 @@ int main()
         }
     }
 
-    print_dynamixel_status(group_sync_write_te.tx_packet(), 0, 7, "torque disable");
+    print_dynamixel_status(group_sync_write_te.txPacket(), 0, 7, "torque disable");
     group_sync_write_te.clearParam();
 
     port_handler->closePort();
