@@ -2,7 +2,6 @@
  * interface file for validator
  * 
  * created by vivaan bahl, vrbahl
- * last modified 4/15/2019
  */
 
 #ifndef VALIDATOR_H
@@ -12,7 +11,7 @@
 #include "instruction_parser/instruction_parser.h"
 #include "config/config.h"
 
-enum ValidatorState : uint8_t
+enum class ValidatorState : uint8_t
 {
     IDLE,
     EVAL_GOAL,

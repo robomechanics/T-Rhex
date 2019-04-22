@@ -2,7 +2,6 @@
  * Interface file for the Microcontroller
  * 
  * Created by Vivaan Bahl, vrbahl
- * Last modified 4/15/2019
  * 
  */
 
@@ -15,7 +14,7 @@
 #include "instruction_parser/instruction_parser.h"
 #include "config/config.h"
 
-enum MicrocontrollerState : uint8_t
+enum class MicrocontrollerState : uint8_t
 {
     INIT,
     CMD,
@@ -26,10 +25,10 @@ enum MicrocontrollerState : uint8_t
     INVALID
 };
 
-enum MicrocontrollerErrorCodes : int8_t
+enum class MicrocontrollerErrorCodes : int8_t
 {
     SUCCESS = 0,
-}
+};
 
 class Microcontroller
 {

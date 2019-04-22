@@ -3,7 +3,6 @@
  * interface file for the instruction parser
  * 
  * Created by vivaan Bahl, vrbahl
- * Last modified 4/15/2019
  */
 
 #ifndef INSTR_PARSER_H
@@ -19,7 +18,7 @@
 
 #include "config/config.h"
 
-enum InstructionState : uint8_t
+enum class InstructionState : uint8_t
 {
     IDLE,
     GET_INST,
@@ -31,7 +30,7 @@ enum InstructionState : uint8_t
     INVALID
 };
 
-enum InstructionErrCodes : int8_t
+enum class InstructionErrCodes : int8_t
 {
     SUCCESS = 0,
 

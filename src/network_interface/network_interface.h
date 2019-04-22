@@ -2,7 +2,6 @@
  * Network Interface interface file
  * 
  * Created by Vivaan Bahl, vrbahl
- * Last modified 4/15/2019
  */
 
 #ifndef NETW_INTF_H
@@ -13,7 +12,7 @@
 #include "microcontroller/microcontroller.h"
 #include "config/config.h"
 
-enum NetInterfaceState
+enum class NetInterfaceState : uint8_t
 {
     INIT,
     WAIT_FOR_CONN,
