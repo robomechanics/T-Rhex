@@ -161,6 +161,9 @@ int8_t dyn_intf_shutdown()
             std::cerr << "failed to add param" << std::endl;
         }
     }
+    group_sync_write_te.txPacket();
+    group_sync_write_te.clearParam();
+
     port_handler->closePort();
     std::cout << "Closing port" << std::endl;
     return 0;
