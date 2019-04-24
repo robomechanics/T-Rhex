@@ -74,21 +74,25 @@ int8_t dyn_intf_init()
 
     // set all the dynamixels to straight up
     uint16_t starting_positions[NUM_DYNAMIXELS] = {0};
-    uint16_t starting_velocities[NUM_DYNAMIXELS] = {step_speed, step_speed, step_speed, step_speed, step_speed, step_speed};
+    int16_t starting_velocities[NUM_DYNAMIXELS] = {step_speed, step_speed, step_speed, step_speed, step_speed, step_speed};
     set_dynamixel_positions(dynamixel_ids, starting_positions, starting_velocities);
     return 0;
 }
 
-int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS], uint16_t goal_velocities[NUM_DYNAMIXELS])
+int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_position[NUM_DYNAMIXELS], int16_t goal_velocities[NUM_DYNAMIXELS])
 {
 
     // command them to the velocities
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         uint16_t dyn_vel = 0;
-        if (is_inside_array(reversal_ids, dynamixel_ids[i]))
+
+        bool is_reversal_dxl = is_inside_array(reversal_ids, dynamixel_ids[i]);
+        bool is_backwards_command = (goal_velocities[i] < 0);
+
+        if (is_reversal_dxl ^ is_backwards_command)
         {
-            dyn_vel = goal_velocities[i] + 1024;
+            dyn_vel = abs(goal_velocities[i]) + 1024;
         }
         else
         {
@@ -104,8 +108,8 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
         }
     }
 
-    check_dxl_result(0, 0, group_pos_sync.txPacket());
-    group_pos_sync.clearParam();
+    check_dxl_result(0, 0, goal_pos_sync.txPacket());
+    goal_pos_sync.clearParam();
 
     // wait for completions
     bool all_dyns_finished = false;
@@ -117,14 +121,13 @@ int8_t set_dynamixel_positions(const uint8_t id[NUM_DYNAMIXELS], uint16_t goal_p
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
             uint8_t dxl_err;
-            int16_t dxl_comm_res = 0;
             uint16_t curr_pos = group_bulk_read.getData(dynamixel_ids[i], ADDR_MX_GET_POS, 2);
             uint16_t adjusted_pos = (curr_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
             if (abs(adjusted_pos - goal_position[i]) < goal_tolerance && !finished[i])
             {
                 finished[i] = true;
-                packet_handler->write2ByteTxRx(port_handler, dynamixel_ids[i], ADDR_MX_GOAL_TORQUE, 0, &dxl_err);
-                print_dynamixel_status(dxl_comm_res, dxl_err, dynamixel_ids[i], "stop goal torque");
+                int16_t dxl_comm_res = packet_handler->write2ByteTxRx(port_handler, dynamixel_ids[i], ADDR_MX_VEL_SET, 0, &dxl_err);
+                check_dxl_result(i, dxl_err, dxl_comm_res);
 
                 all_dyns_finished = true;
                 for (int i = 0; i < NUM_DYNAMIXELS; i++)
