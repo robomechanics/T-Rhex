@@ -69,6 +69,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::IDLE:
         {
+#if VERBOSE
+            std::cout << "Idle" << std::endl;
+#endif
             this->cmd_finished = false;
 
             if (this->run_command)
@@ -85,6 +88,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::SEND_INSTR:
         {
+#if VERBOSE
+            std::cout << "Send Instr" << std::endl;
+#endif
             this->run_command = false;
             if (this->shutdown)
             {
@@ -107,6 +113,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::READ_DATA:
         {
+#if VERBOSE
+            std::cout << "Read Data" << std::endl;
+#endif
             if (this->shutdown)
             {
                 this->current_state = DynInterfaceState::SHUTDOWN;
@@ -126,6 +135,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::STOP_MOTORS:
         {
+#if VERBOSE
+            std::cout << "Stop Motors" << std::endl;
+#endif
             if (this->shutdown)
             {
                 this->current_state = DynInterfaceState::SHUTDOWN;
@@ -160,6 +172,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::FINISH:
         {
+#if VERBOSE
+            std::cout << "Finish" << std::endl;
+#endif
             this->cmd_finished = true;
             this->current_state = DynInterfaceState::IDLE;
 
@@ -168,6 +183,9 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::SHUTDOWN:
         {
+#if VERBOSE
+            std::cout << "Shutdown" << std::endl;
+#endif
             uint8_t torque_disable = 0;
             for (int id : dynamixel_ids)
             {

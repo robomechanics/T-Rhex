@@ -70,6 +70,9 @@ int main(int argc, char **argv)
         // get outputs
 
         usleep(1 * 1000); // 1ms run loop
+#if VERBOSE
+        usleep(5 * 1000 * 1000);
+#endif
     }
 
     microcontroller.set_shutdown_cmd(true);

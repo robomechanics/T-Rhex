@@ -7,6 +7,12 @@ Microcontroller::Microcontroller(std::vector<Instruction *> instruction_set)
     this->N = instruction_set.size();
 
     // define shutdown idle and init
+    uint16_t starting_goals[NUM_DYNAMIXELS] = { 0 };
+    int16_t starting_velocities[NUM_DYNAMIXELS] = { 20, 20, 20, 20, 20, 20 };
+    this->initcmd = new Instruction();
+    this->initcmd->goal_positions = starting_goals;
+    this->initcmd->goal_velocities = starting_velocities;
+
     std::cout << "Initialized Microcontroller" << std::endl;
 }
 
@@ -16,6 +22,9 @@ void Microcontroller::tick()
     {
         case MicrocontrollerState::INIT:
         {
+#if VERBOSE
+            std::cout << "Init state" << std::endl;
+#endif
             this->insctr = 0;
             this->reinitialize = false;
             this->shutdown = false;
@@ -33,6 +42,9 @@ void Microcontroller::tick()
             this->insctr %= this->N;
             this->curr_ins_finished = false;
             this->send_new_ins = true;
+#if VERBOSE
+            std::cout << "Running command number " << this->insctr << std::endl;
+#endif
 
             this->current_state = MicrocontrollerState::WAIT_FOR_COMP;
 
@@ -41,7 +53,9 @@ void Microcontroller::tick()
 
         case MicrocontrollerState::SHUTDOWN:
         {
-            this->curr_ins = this->shutdown_cmd;
+#if VERBOSE
+            std::cout << "Shutting down" << std::endl;
+#endif
             this->current_state = MicrocontrollerState::IDLE;
 
             break;
