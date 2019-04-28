@@ -95,7 +95,7 @@ int main(int argc, char **argv)
         // tick
         // get outputs
 
-        usleep(50 * 1000); // 1ms run loop
+        usleep(1 * 1000); // 1ms run loop
 #if VERBOSE
         usleep(500 * 1000);
 #endif

@@ -8,7 +8,7 @@ Microcontroller::Microcontroller(std::vector<Instruction *> instruction_set)
 
     // define shutdown idle and init
     uint16_t starting_goals[NUM_DYNAMIXELS] = { 0 };
-    int16_t starting_velocities[NUM_DYNAMIXELS] = { 20, 20, 20, 20, 20, 20 };
+    int16_t starting_velocities[NUM_DYNAMIXELS] = { 60, 60, 60, 60, 60, 60 };
     this->initcmd = new Instruction();
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
