@@ -8,6 +8,7 @@ DynamixelInterface::DynamixelInterface(void)
     group_sync_torque_toggle = new dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_TORQUE_EN, TORQ_EN_PKT_LEN);
     group_position_read = new dynamixel::GroupBulkRead(port_handler, adapter);
     group_sync_vel_set = new dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_VEL_SET, VEL_SET_PKT_LEN);
+    std::cout << "Initialized Dynamixel Interface" << std::endl;
 }
 
 void DynamixelInterface::tick()

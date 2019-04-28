@@ -7,6 +7,7 @@ Microcontroller::Microcontroller(std::vector<Instruction *> instruction_set)
     this->N = instruction_set.size();
 
     // define shutdown idle and init
+    std::cout << "Initialized Microcontroller" << std::endl;
 }
 
 void Microcontroller::tick()

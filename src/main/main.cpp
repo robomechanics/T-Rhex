@@ -27,6 +27,8 @@ int main(int argc, char **argv)
     InstructionParser instruction_parser(gait_config_file);
     std::vector<Instruction *> instruction_set = instruction_parser.get_instruction_set();
 
+    std::cout << "Read instruction file" << std::endl;
+
     DynamixelInterface dynamixel_interface;
     Microcontroller microcontroller(instruction_set);
     // NetworkInterface network_interface;
@@ -37,6 +39,7 @@ int main(int argc, char **argv)
     bool dyni_micr_is_finished = false;
     uint16_t *dyni_micro_leg_data = NULL;
 
+    std::cout << "Initialized" << std::endl;
 
     while (run_system)
     {
@@ -59,6 +62,7 @@ int main(int argc, char **argv)
         // get outputs
         dyni_micr_is_finished = dynamixel_interface.get_cmd_finished();
         dyni_micro_leg_data = dynamixel_interface.get_pos_data();
+
 
         // NETWORK INTERFACE
         // send inputs
