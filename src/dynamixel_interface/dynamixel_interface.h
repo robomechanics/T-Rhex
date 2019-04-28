@@ -56,9 +56,9 @@ private:
 
     dynamixel::PortHandler *port_handler;
     dynamixel::PacketHandler *adapter;
-    dynamixel::GroupSyncWrite group_sync_torque_toggle;
-    dynamixel::GroupSyncWrite group_sync_vel_set;
-    dynamixel::GroupBulkRead group_position_read;
+    dynamixel::GroupSyncWrite *group_sync_torque_toggle;
+    dynamixel::GroupSyncWrite *group_sync_vel_set;
+    dynamixel::GroupBulkRead *group_position_read;
     bool cmd_finished;
     Instruction *instr;
     uint16_t pos_data[NUM_DYNAMIXELS];

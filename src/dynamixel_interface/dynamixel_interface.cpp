@@ -1,10 +1,13 @@
 #include "dynamixel_interface.h"
 
-DynamixelInterface::DynamixelInterface()
+DynamixelInterface::DynamixelInterface(void)
 {
     this->current_state = DynInterfaceState::INIT;
     this->port_handler = dynamixel::PortHandler::getPortHandler(this->port_path.c_str());
     this->adapter = dynamixel::PacketHandler::getPacketHandler(1.0);
+    *group_sync_torque_toggle = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_TORQUE_EN, TORQ_EN_PKT_LEN);
+    *group_position_read = dynamixel::GroupBulkRead(port_handler, adapter);
+    *group_sync_vel_set = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_VEL_SET, VEL_SET_PKT_LEN);
 }
 
 void DynamixelInterface::tick()
@@ -26,7 +29,7 @@ void DynamixelInterface::tick()
                 break;
             }
 
-            if (this->adapter->setBaudRate(this->baud_rate))
+            if (this->port_handler->setBaudRate(this->baud_rate))
             {
                 std::cout << "Successfully set baud rate" << std::endl;
             }          
@@ -39,30 +42,25 @@ void DynamixelInterface::tick()
             }
 
             // enable torque on all servos
-            group_sync_torque_toggle = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_TORQUE_EN, TORQ_EN_PKT_LEN);
             uint8_t torque_enable = 1;
             for (int id : dynamixel_ids)
             {
-                group_sync_torque_toggle.addParam(id, &torque_enable);
+                group_sync_torque_toggle->addParam(id, &torque_enable);
             }
             
-            if (check_dxl_result(0, group_sync_torque_toggle.txPacket()) != DynamixelErrorCodes::SUCCESS)
+            if (check_dxl_result(0, group_sync_torque_toggle->txPacket()) != DynamixelErrorCodes::SUCCESS)
             {
                 this->current_state = DynInterfaceState::INVALID;
                 break;
             }
-            group_sync_torque_toggle.clearParam();
+            group_sync_torque_toggle->clearParam();
 
             // Setup bulk reader (since it doesnt' change)
-            group_position_read = dynamixel::GroupBulkRead(port_handler, adapter);
             for (int id : dynamixel_ids)
             {
-                group_position_read.addParam(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
+                group_position_read->addParam(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
             }
 
-            // initialize group velocity writer
-            group_sync_vel_set = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_VEL_SET, VEL_SET_PKT_LEN);
-            
             this->current_state = DynInterfaceState::IDLE;
 
             break;
@@ -172,9 +170,9 @@ void DynamixelInterface::tick()
             uint8_t torque_disable = 0;
             for (int id : dynamixel_ids)
             {
-                group_sync_torque_toggle.addParam(id, &torque_disable);
+                group_sync_torque_toggle->addParam(id, &torque_disable);
             }
-            group_sync_torque_toggle.txPacket();
+            group_sync_torque_toggle->txPacket();
 
             this->port_handler->closePort();
             this->port_closed = true;
@@ -217,11 +215,11 @@ DynamixelErrorCodes DynamixelInterface::run_velocity_command()
 
         uint8_t vel_data[VEL_SET_PKT_LEN] = { DXL_LOBYTE(vel), DXL_HIBYTE(vel) };
 
-        group_sync_vel_set.addParam(dynamixel_ids[i], vel_data);
+        group_sync_vel_set->addParam(dynamixel_ids[i], vel_data);
     }
 
-    uint16_t dxl_comm_res = group_sync_vel_set.txPacket();
-    group_sync_vel_set.clearParam();
+    uint16_t dxl_comm_res = group_sync_vel_set->txPacket();
+    group_sync_vel_set->clearParam();
 
     if (check_dxl_result(0, dxl_comm_res) != DynamixelErrorCodes::SUCCESS)
     {
@@ -234,7 +232,7 @@ DynamixelErrorCodes DynamixelInterface::run_velocity_command()
 DynamixelErrorCodes DynamixelInterface::read_pos_data()
 {
     // run bulk read on current dynamixel positions, offset them by the offset array
-    uint16_t dxl_comm_res = group_position_read.txRxPacket();
+    uint16_t dxl_comm_res = group_position_read->txRxPacket();
     if (check_dxl_result(0, dxl_comm_res) != DynamixelErrorCodes::SUCCESS)
     {
         return DynamixelErrorCodes::POS_READ_ERR;
@@ -243,7 +241,7 @@ DynamixelErrorCodes DynamixelInterface::read_pos_data()
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         uint8_t id = dynamixel_ids[i];
-        uint16_t current_pos = group_position_read.getData(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
+        uint16_t current_pos = group_position_read->getData(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
         uint16_t adjusted_pos = (current_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
 
         pos_data[i] = adjusted_pos;
@@ -329,4 +327,9 @@ int8_t DynamixelInterface::set_run_command(bool run_command)
 {
     this->run_command = run_command;
     return 0;
+}
+
+bool DynamixelInterface::is_port_open()
+{
+    return !port_closed;
 }

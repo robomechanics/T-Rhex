@@ -106,3 +106,9 @@ Instruction* Microcontroller::get_curr_inst()
 {
     return this->curr_ins;
 }
+
+void Microcontroller::set_leg_data(uint16_t leg_data[NUM_DYNAMIXELS])
+{
+    //TODO
+    return;
+}
