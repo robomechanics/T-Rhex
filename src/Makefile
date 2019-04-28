@@ -6,12 +6,14 @@ INSTR_PARSER_SRC = instruction_parser/instruction_parser.cpp
 MAIN_SRC = main/main.cpp
 MICRO_SRC = microcontroller/microcontroller.cpp
 NET_INTF_SRC = network_interface/network_interface.cpp
-VALIDATOR_SRC = validator/validator.cpp
 
 INCLUDES += -I$(DIR_DXL)/include/dynamixel_sdk
 INCLUDES += -I./
 
-SOURCES = $(DYN_INTF_SRC) $(INSTR_PARSER_SRC) $(MAIN_SRC) $(MICRO_SRC) $(NET_INTF_SRC) $(VALIDATOR_SRC)
+LIBRARIES += -ldxl_x64_cpp
+LIBRARIES += -lrt
+
+SOURCES = $(DYN_INTF_SRC) $(INSTR_PARSER_SRC) $(MAIN_SRC) $(MICRO_SRC) $(NET_INTF_SRC)
 
 all:
-	g++ -O2 -DLINUX -D_GNU_SOURCE -Wall -Wextra -std=c++11 -m64 $(INCLUDES) $(SOURCES)
+	g++ -O2 -DLINUX -D_GNU_SOURCE -Wall -Wextra -std=c++11 -m64 $(INCLUDES) $(SOURCES) -o $(TARGET) $(LIBRARIES)

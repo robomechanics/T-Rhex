@@ -25,10 +25,6 @@ enum class MicrocontrollerState : uint8_t
     INVALID
 };
 
-enum class MicrocontrollerErrorCodes : int8_t
-{
-    SUCCESS = 0,
-};
 
 class Microcontroller
 {
@@ -36,35 +32,31 @@ public:
     int8_t set_reinit_cmd(bool reinitialize);
     int8_t set_shutdown_cmd(bool shutdown);
     uint16_t* get_leg_data();
-    Instruction get_curr_inst();
-    int8_t set_instruction_set(std::vector<Instruction> instruction_set);
-    int8_t set_N(uint16_t N);
-    int8_t set_send_new_ins(bool send_new_ins);
-    int8_t set_new_inst_set(std::vector<Instruction> new_inst_set);
+    Instruction* get_curr_inst();
+    void set_curr_ins_finished(bool is_finished);
+    void set_leg_data(uint16_t leg_data[NUM_DYNAMIXELS]);
+    bool get_send_instr();
 
-    Microcontroller();
+    Microcontroller(std::vector<Instruction*> instruction_set);
     void tick();
 
 private:
     MicrocontrollerState current_state;
 
-    bool on_led;
-    DynamixelInterface dynlib;
     uint16_t insctr;
-    Instruction initcmd;
+    Instruction *initcmd;
     bool reinitialize;
     bool shutdown;
     uint16_t leg_data[NUM_DYNAMIXELS];
-    Instruction curr_ins;
+    Instruction *curr_ins;
     bool curr_ins_finished;
     std::vector<Instruction *> inst_set;
     uint16_t N;
     bool send_new_ins;
-    Instruction idle_cmd;
-    std::vector<Instruction> new_inst_set;
-    Instruction shutdown_cmd;
+    Instruction *shutdown_cmd;
 
     int errcode;
+
 };
 
 #endif

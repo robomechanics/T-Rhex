@@ -16,6 +16,7 @@ void DynamixelInterface::tick()
             if (this->port_handler->openPort())
             {
                 std::cout << "Successfully opened port" << std::endl;
+                this->port_closed = false;
             }
             else
             {
@@ -75,6 +76,10 @@ void DynamixelInterface::tick()
             {
                 this->current_state = DynInterfaceState::SEND_INSTR;
             }
+            else if (this->shutdown)
+            {
+                this->current_state = DynInterfaceState::SHUTDOWN;
+            }
 
             break;
         }
@@ -82,6 +87,11 @@ void DynamixelInterface::tick()
         case DynInterfaceState::SEND_INSTR:
         {
             this->run_command = false;
+            if (this->shutdown)
+            {
+                this->current_state = DynInterfaceState::SHUTDOWN;
+                break;
+            }
 
             if (run_velocity_command() != DynamixelErrorCodes::SUCCESS)
             {
@@ -98,6 +108,12 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::READ_DATA:
         {
+            if (this->shutdown)
+            {
+                this->current_state = DynInterfaceState::SHUTDOWN;
+                break;
+            }
+
             if (read_pos_data() != DynamixelErrorCodes::SUCCESS)
             {
                 this->current_state = DynInterfaceState::INVALID;
@@ -111,6 +127,12 @@ void DynamixelInterface::tick()
 
         case DynInterfaceState::STOP_MOTORS:
         {
+            if (this->shutdown)
+            {
+                this->current_state = DynInterfaceState::SHUTDOWN;
+                break;
+            }
+
             if (compare_pos_data() != DynamixelErrorCodes::SUCCESS)
             {
                 this->current_state = DynInterfaceState::INVALID;
@@ -155,6 +177,7 @@ void DynamixelInterface::tick()
             group_sync_torque_toggle.txPacket();
 
             this->port_handler->closePort();
+            this->port_closed = true;
 
             break;
         }
@@ -183,7 +206,7 @@ bool is_inside_array(const uint8_t *arr, uint8_t e, uint8_t num_elems)
 DynamixelErrorCodes DynamixelInterface::run_velocity_command()
 {
     // run bulk write on the velocity commands from the instruction
-    uint16_t *velocity_commands = instr.goal_velocities;
+    uint16_t *velocity_commands = instr->goal_velocities;
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         uint16_t vel = velocity_commands[i];
@@ -232,7 +255,7 @@ DynamixelErrorCodes DynamixelInterface::read_pos_data()
 DynamixelErrorCodes DynamixelInterface::compare_pos_data()
 {
     // iterate through pos_data and see if any motors need to be stopped
-    uint16_t *desired_positions = instr.goal_positions;
+    uint16_t *desired_positions = instr->goal_positions;
     for (int i = 0; i < NUM_DYNAMIXELS; i++)
     {
         if (finished[i]) { continue; }
@@ -273,4 +296,37 @@ DynamixelErrorCodes DynamixelInterface::check_dxl_result(uint8_t dxl_err, int16_
     }
 
     return DynamixelErrorCodes::SUCCESS;
+}
+
+int8_t DynamixelInterface::set_instr(Instruction *instr)
+{
+    this->instr = instr;
+    return 0;
+}
+
+bool DynamixelInterface::get_cmd_finished()
+{
+    return cmd_finished;
+}
+
+uint16_t *DynamixelInterface::get_pos_data()
+{
+    return pos_data;
+}
+
+bool* DynamixelInterface::get_finished()
+{
+    return finished;
+}
+
+int8_t DynamixelInterface::set_shutdown(bool shutdown)
+{
+    this->shutdown = shutdown;
+    return 0;
+}
+
+int8_t DynamixelInterface::set_run_command(bool run_command)
+{
+    this->run_command = run_command;
+    return 0;
 }
