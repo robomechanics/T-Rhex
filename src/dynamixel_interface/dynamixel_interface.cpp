@@ -61,6 +61,7 @@ void DynamixelInterface::tick()
             {
                 group_position_read->addParam(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
             }
+	    this->shutdown = false;
 
             this->current_state = DynInterfaceState::IDLE;
 
@@ -92,6 +93,12 @@ void DynamixelInterface::tick()
             std::cout << "Send Instr" << std::endl;
 #endif
             this->run_command = false;
+
+	    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+	    {
+		    finished[i] = false;
+	    }
+
             if (this->shutdown)
             {
                 this->current_state = DynInterfaceState::SHUTDOWN;
@@ -291,6 +298,7 @@ DynamixelErrorCodes DynamixelInterface::compare_pos_data()
             {
                 return DynamixelErrorCodes::VEL_CMD_ERR;
             }
+	    std::cout << "Dynamixel " << std::to_string(id) << " finished" << std::endl;
         }
     }
 

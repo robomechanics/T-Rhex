@@ -82,7 +82,7 @@ private:
     const uint16_t dynamixel_offsets[NUM_DYNAMIXELS] = { 150, 2277, 1069, 855, 211, 339 };
     const uint8_t dynamixel_ids[NUM_DYNAMIXELS] = {0, 1, 2, 3, 4, 6};
     const uint16_t DYN_ROTATION_TICKS = 4096;
-    const uint16_t goal_tol = 100;
+    const uint16_t goal_tol = 50;
 
     DynamixelErrorCodes run_velocity_command();
     DynamixelErrorCodes read_pos_data();

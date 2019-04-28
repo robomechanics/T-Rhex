@@ -32,6 +32,8 @@ void Microcontroller::tick()
             this->reinitialize = false;
             this->shutdown = false;
             this->curr_ins = initcmd;
+	    this->send_new_ins = true;
+	    this->shutdown = false;
 
             this->current_state = MicrocontrollerState::WAIT_FOR_COMP;
 
