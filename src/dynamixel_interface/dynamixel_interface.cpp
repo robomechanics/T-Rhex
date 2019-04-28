@@ -298,7 +298,6 @@ DynamixelErrorCodes DynamixelInterface::compare_pos_data()
             {
                 return DynamixelErrorCodes::VEL_CMD_ERR;
             }
-	    std::cout << "Dynamixel " << std::to_string(id) << " finished" << std::endl;
         }
     }
 

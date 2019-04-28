@@ -79,7 +79,7 @@ private:
     const uint8_t POS_GET_PKT_LEN = 2;
     const static uint8_t num_reversal = 3;
     const uint8_t reversal_ids[num_reversal] = {3, 4, 6};
-    const uint16_t dynamixel_offsets[NUM_DYNAMIXELS] = { 150, 2277, 1069, 855, 211, 339 };
+    const uint16_t dynamixel_offsets[NUM_DYNAMIXELS] = { 3621, 2254, 12, 453, 282, 3918 };
     const uint8_t dynamixel_ids[NUM_DYNAMIXELS] = {0, 1, 2, 3, 4, 6};
     const uint16_t DYN_ROTATION_TICKS = 4096;
     const uint16_t goal_tol = 50;
