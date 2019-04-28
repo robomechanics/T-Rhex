@@ -5,9 +5,9 @@ DynamixelInterface::DynamixelInterface(void)
     this->current_state = DynInterfaceState::INIT;
     this->port_handler = dynamixel::PortHandler::getPortHandler(this->port_path.c_str());
     this->adapter = dynamixel::PacketHandler::getPacketHandler(1.0);
-    *group_sync_torque_toggle = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_TORQUE_EN, TORQ_EN_PKT_LEN);
-    *group_position_read = dynamixel::GroupBulkRead(port_handler, adapter);
-    *group_sync_vel_set = dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_VEL_SET, VEL_SET_PKT_LEN);
+    group_sync_torque_toggle = new dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_TORQUE_EN, TORQ_EN_PKT_LEN);
+    group_position_read = new dynamixel::GroupBulkRead(port_handler, adapter);
+    group_sync_vel_set = new dynamixel::GroupSyncWrite(port_handler, adapter, ADDR_MX_VEL_SET, VEL_SET_PKT_LEN);
 }
 
 void DynamixelInterface::tick()
