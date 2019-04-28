@@ -10,8 +10,11 @@ Microcontroller::Microcontroller(std::vector<Instruction *> instruction_set)
     uint16_t starting_goals[NUM_DYNAMIXELS] = { 0 };
     int16_t starting_velocities[NUM_DYNAMIXELS] = { 20, 20, 20, 20, 20, 20 };
     this->initcmd = new Instruction();
-    this->initcmd->goal_positions = starting_goals;
-    this->initcmd->goal_velocities = starting_velocities;
+    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    {
+        this->initcmd->goal_positions[i] = starting_goals[i];
+        this->initcmd->goal_velocities[i] = starting_velocities[i];
+    }
 
     std::cout << "Initialized Microcontroller" << std::endl;
 }
