@@ -7,13 +7,17 @@ Microcontroller::Microcontroller(std::vector<Instruction *> instruction_set)
     this->N = instruction_set.size();
 
     // define shutdown idle and init
-    uint16_t starting_goals[NUM_DYNAMIXELS] = { 0 };
+    uint16_t starting_goals[NUM_DYNAMIXELS] = { 0, 0, 0, 0, 0, 0, 2048 };
     int16_t starting_velocities[NUM_DYNAMIXELS] = { 60, 60, 60, 60, 60, 60 };
     this->initcmd = new Instruction();
-    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    for (int i = 0; i < NUM_LEGS; i++)
     {
         this->initcmd->goal_positions[i] = starting_goals[i];
         this->initcmd->goal_velocities[i] = starting_velocities[i];
+    }
+    for (int i = NUM_LEGS; i < NUM_DYNAMIXELS; i++)
+    {
+        this->initcmd->goal_positions[i] = starting_goals[i];
     }
 
     std::cout << "Initialized Microcontroller" << std::endl;

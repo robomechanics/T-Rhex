@@ -94,10 +94,10 @@ void DynamixelInterface::tick()
 #endif
             this->run_command = false;
 
-	    for (int i = 0; i < NUM_DYNAMIXELS; i++)
-	    {
-		    finished[i] = false;
-	    }
+            for (int i = 0; i < NUM_LEGS; i++)
+            {
+                finished[i] = false;
+            }
 
             if (this->shutdown)
             {
@@ -105,7 +105,10 @@ void DynamixelInterface::tick()
                 break;
             }
 
-            if (run_velocity_command() != DynamixelErrorCodes::SUCCESS)
+            DynamixelErrorCodes vel_code = run_velocity_command();
+            DynamixelErrorCodes pos_code = run_position_command();
+
+            if (vel_code != DynamixelErrorCodes::SUCCESS || pos_code != DynamixelErrorCodes::SUCCESS)
             {
                 this->current_state = DynInterfaceState::INVALID;
                 break;
@@ -158,7 +161,7 @@ void DynamixelInterface::tick()
             }
 
             bool all_dyns_finished = true;
-            for (uint8_t i = 0; i < NUM_DYNAMIXELS; i++)
+            for (uint8_t i = 0; i < NUM_LEGS; i++)
             {
                 if (!finished[i])
                 {
@@ -231,17 +234,17 @@ DynamixelErrorCodes DynamixelInterface::run_velocity_command()
 {
     // run bulk write on the velocity commands from the instruction
     uint16_t *velocity_commands = instr->goal_velocities;
-    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    for (int i = 0; i < NUM_LEGS; i++)
     {
         uint16_t vel = velocity_commands[i];
-        if(is_inside_array(reversal_ids, dynamixel_ids[i], num_reversal))
+        if(is_inside_array(reversal_ids, leg_ids[i], num_reversal))
         {
             vel += 1024;
         }
 
         uint8_t vel_data[VEL_SET_PKT_LEN] = { DXL_LOBYTE(vel), DXL_HIBYTE(vel) };
 
-        group_sync_vel_set->addParam(dynamixel_ids[i], vel_data);
+        group_sync_vel_set->addParam(leg_ids[i], vel_data);
     }
 
     uint16_t dxl_comm_res = group_sync_vel_set->txPacket();
@@ -255,6 +258,20 @@ DynamixelErrorCodes DynamixelInterface::run_velocity_command()
     return DynamixelErrorCodes::SUCCESS;
 }
 
+DynamixelErrorCodes DynamixelInterface::run_position_command()
+{
+    uint16_t *pos_commands = instr->goal_positions;
+    for (int i = NUM_LEGS; i < NUM_DYNAMIXELS; i++)
+    {
+        uint8_t dxl_err;
+        int16_t dxl_comm_res = adapter->write2ByteTxRx(port_handler, arm_ids[i-NUM_LEGS], ADDR_MX_POS_SET, pos_commands[i], &dxl_err);
+        if (check_dxl_result(dxl_err, dxl_comm_res) != DynamixelErrorCodes::SUCCESS)
+        {
+            return DynamixelErrorCodes::POS_SET_ERR;
+        }
+    }
+}
+
 DynamixelErrorCodes DynamixelInterface::read_pos_data()
 {
     // run bulk read on current dynamixel positions, offset them by the offset array
@@ -264,11 +281,11 @@ DynamixelErrorCodes DynamixelInterface::read_pos_data()
         return DynamixelErrorCodes::POS_READ_ERR;
     }
     
-    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    for (int i = 0; i < NUM_LEGS; i++)
     {
         uint8_t id = dynamixel_ids[i];
         uint16_t current_pos = group_position_read->getData(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
-        uint16_t adjusted_pos = (current_pos + dynamixel_offsets[i]) % DYN_ROTATION_TICKS;
+        uint16_t adjusted_pos = (current_pos + leg_offsets[i]) % DYN_ROTATION_TICKS;
 
         pos_data[i] = adjusted_pos;
     }
@@ -280,11 +297,11 @@ DynamixelErrorCodes DynamixelInterface::compare_pos_data()
 {
     // iterate through pos_data and see if any motors need to be stopped
     uint16_t *desired_positions = instr->goal_positions;
-    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    for (int i = 0; i < NUM_LEGS; i++)
     {
         if (finished[i]) { continue; }
 
-        uint8_t id = dynamixel_ids[i];
+        uint8_t id = leg_ids[i];
         uint16_t current_pos = pos_data[i];
         uint16_t desired_pos = desired_positions[i];
 

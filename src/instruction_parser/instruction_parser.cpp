@@ -45,12 +45,15 @@ bool InstructionParser::is_valid_instruction(Instruction *ins)
         for (int i = 0; i < NUM_DYNAMIXELS; i++)
         {
             uint16_t pos = ins->goal_positions[i];
-            uint16_t vel = ins->goal_velocities[i];
 
             if (pos < POS_LOWER_BOUND || pos > POS_UPPER_BOUND)
             {
                 return false;
             }
+        }
+        for (int i = 0; i < NUM_LEGS; i++)
+        {
+            uint16_t vel = ins->goal_velocities[i];
             if (vel < VEL_LOWER_BOUND || vel > VEL_UPPER_BOUND)
             {
                 return false;
@@ -121,7 +124,7 @@ Instruction* InstructionParser::parse_goal_instruction(std::string instr_line)
         
     }
     // velocity parsing
-    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+    for (int i = 0; i < NUM_LEGS ; i++)
     {
         if (ss.eof())
         {

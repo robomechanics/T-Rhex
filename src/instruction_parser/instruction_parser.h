@@ -22,7 +22,7 @@ class Instruction
 {
 public:
     uint16_t goal_positions[NUM_DYNAMIXELS];
-    uint16_t goal_velocities[NUM_DYNAMIXELS];
+    uint16_t goal_velocities[NUM_LEGS];
     bool is_wait_instr;
     uint16_t wait_time_ms;
 };

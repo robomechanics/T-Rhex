@@ -35,6 +35,7 @@ enum class DynamixelErrorCodes : int8_t
     DXL_COMM_ERR = -4,
     VEL_CMD_ERR = -5,
     POS_READ_ERR = -6,
+    POS_SET_ERR = -7,
 };
 
 class DynamixelInterface
@@ -62,7 +63,7 @@ private:
     bool cmd_finished;
     Instruction *instr;
     uint16_t pos_data[NUM_DYNAMIXELS];
-    bool finished[NUM_DYNAMIXELS];
+    bool finished[NUM_LEGS];
     bool shutdown;
     bool run_command;
     bool port_closed;
@@ -74,17 +75,22 @@ private:
     const uint8_t ADDR_MX_TORQUE_EN = 0x18;
     const uint8_t ADDR_MX_VEL_SET = 0x20;
     const uint8_t ADDR_MX_POS_GET = 0x24;
+    const uint8_t ADDR_MX_POS_SET = 0x1E;
     const uint8_t TORQ_EN_PKT_LEN = 1;
     const uint8_t VEL_SET_PKT_LEN = 2;
     const uint8_t POS_GET_PKT_LEN = 2;
+    const uint8_t POS_SET_PKT_LEN = 2;
     const static uint8_t num_reversal = 3;
     const uint8_t reversal_ids[num_reversal] = {3, 4, 6};
-    const uint16_t dynamixel_offsets[NUM_DYNAMIXELS] = { 3621, 2254, 12, 453, 282, 3918 };
-    const uint8_t dynamixel_ids[NUM_DYNAMIXELS] = {0, 1, 2, 3, 4, 6};
+    const uint16_t leg_offsets[NUM_LEGS] = { 3621, 2254, 12, 453, 282, 3918 };
+    const uint8_t dynamixel_ids[NUM_DYNAMIXELS] = {0, 1, 2, 3, 4, 6, 20};
+    const uint8_t leg_ids[NUM_LEGS] = { 0, 1, 2, 3, 4, 6 };
+    const uint8_t arm_ids[NUM_ARMS] = { 20 };
     const uint16_t DYN_ROTATION_TICKS = 4096;
     const uint16_t goal_tol = 50;
 
     DynamixelErrorCodes run_velocity_command();
+    DynamixelErrorCodes run_position_command();
     DynamixelErrorCodes read_pos_data();
     DynamixelErrorCodes compare_pos_data();
     DynamixelErrorCodes check_dxl_result(uint8_t dxl_err, int16_t dxl_comm_res);
