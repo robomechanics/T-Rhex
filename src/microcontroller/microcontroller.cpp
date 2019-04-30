@@ -53,6 +53,16 @@ void Microcontroller::tick()
 #if VERBOSE
             std::cout << "Running command number " << this->insctr << std::endl;
 #endif
+	    std::cout << "Running command ";
+	    for (int i = 0; i < NUM_DYNAMIXELS; i++)
+	    {
+		    std::cout << std::to_string(this->curr_ins->goal_positions[i]) << " ";
+	    }
+	    for (int i = 0; i < NUM_LEGS; i++)
+	    {
+		    std::cout << std::to_string(this->curr_ins->goal_velocities[i]) << " ";
+	    }
+	    std::cout << std::endl;
 
             this->current_state = MicrocontrollerState::WAIT_FOR_COMP;
 

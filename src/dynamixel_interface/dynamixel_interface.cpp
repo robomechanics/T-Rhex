@@ -248,14 +248,21 @@ bool is_inside_array(const uint8_t *arr, uint8_t e, uint8_t num_elems)
 DynamixelErrorCodes DynamixelInterface::run_velocity_command()
 {
     // run bulk write on the velocity commands from the instruction
-    uint16_t *velocity_commands = instr->goal_velocities;
+    int16_t *velocity_commands = instr->goal_velocities;
     for (int i = 0; i < NUM_LEGS; i++)
     {
-        uint16_t vel = velocity_commands[i];
-        if(is_inside_array(reversal_ids, leg_ids[i], num_reversal))
+        int16_t vel = velocity_commands[i];
+	bool is_reversal_dxl = is_inside_array(reversal_ids, leg_ids[i], num_reversal);
+	bool is_backwards_command = vel < 0;
+
+        if(is_reversal_dxl ^ is_backwards_command)
         {
-            vel += 1024;
+            vel = abs(vel) + 1024;
         }
+	else
+	{
+		vel = abs(vel);
+	}
 
         uint8_t vel_data[VEL_SET_PKT_LEN] = { DXL_LOBYTE(vel), DXL_HIBYTE(vel) };
 

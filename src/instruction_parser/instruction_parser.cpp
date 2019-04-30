@@ -53,7 +53,7 @@ bool InstructionParser::is_valid_instruction(Instruction *ins)
         }
         for (int i = 0; i < NUM_LEGS; i++)
         {
-            uint16_t vel = ins->goal_velocities[i];
+            int16_t vel = ins->goal_velocities[i];
             if (vel < VEL_LOWER_BOUND || vel > VEL_UPPER_BOUND)
             {
                 return false;
@@ -134,7 +134,8 @@ Instruction* InstructionParser::parse_goal_instruction(std::string instr_line)
         else
         {
             ss >> token;
-            curr_instruction->goal_velocities[i] = std::stoi(token);
+	    int16_t vel = std::stoi(token);
+            curr_instruction->goal_velocities[i] = vel;
         }
         
     }
