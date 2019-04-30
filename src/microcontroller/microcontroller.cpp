@@ -37,7 +37,6 @@ void Microcontroller::tick()
             this->shutdown = false;
             this->curr_ins = initcmd;
 	    this->send_new_ins = true;
-	    this->shutdown = false;
 
             this->current_state = MicrocontrollerState::WAIT_FOR_COMP;
 
@@ -85,6 +84,13 @@ void Microcontroller::tick()
         {
             if (this->curr_ins_finished)
             {
+		std::cout << "Finished instruction ";
+		for (int i = 0; i < NUM_DYNAMIXELS; i++)
+		{
+			std::cout << std::to_string(this->curr_ins->goal_positions[i]) << " ";
+		}
+		std::cout << std::endl;
+
                 this->current_state = MicrocontrollerState::CMD;
             }
 

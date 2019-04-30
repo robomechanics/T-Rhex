@@ -45,7 +45,9 @@ int main(int argc, char **argv)
 
     std::cout << "Initialized" << std::endl;
 
+#if VERBOSE
     int count = 0;
+#endif
 
     while (run_system)
     {
@@ -76,6 +78,7 @@ int main(int argc, char **argv)
 #if VERBOSE
 	if (count % 1 == 0)
 	{
+		std::cout << "positions: ";
 		for (int i = 0; i < 6; i++)
 		{
 			std::cout << " " << std::to_string(dyni_micro_leg_data[i]);
@@ -95,7 +98,7 @@ int main(int argc, char **argv)
         // tick
         // get outputs
 
-        usleep(1 * 1000); // 1ms run loop
+        usleep(500); // 0.5ms run loop
 #if VERBOSE
         usleep(500 * 1000);
 #endif

@@ -17,6 +17,9 @@ void DynamixelInterface::tick()
     {
         case DynInterfaceState::INIT:
         {
+#if VERBOSE
+		std::cout << "Init" << std::endl;
+#endif
             if (this->port_handler->openPort())
             {
                 std::cout << "Successfully opened port" << std::endl;
@@ -61,7 +64,9 @@ void DynamixelInterface::tick()
             {
                 group_position_read->addParam(id, ADDR_MX_POS_GET, POS_GET_PKT_LEN);
             }
+	    read_pos_data();
 	    this->shutdown = false;
+	    this->cmd_finished = false;
 
             this->current_state = DynInterfaceState::IDLE;
 
@@ -93,6 +98,7 @@ void DynamixelInterface::tick()
             std::cout << "Send Instr" << std::endl;
 #endif
             this->run_command = false;
+	    this->cmd_finished = false;
 
             for (int i = 0; i < NUM_LEGS; i++)
             {
@@ -270,6 +276,7 @@ DynamixelErrorCodes DynamixelInterface::run_position_command()
             return DynamixelErrorCodes::POS_SET_ERR;
         }
     }
+    return DynamixelErrorCodes::SUCCESS;
 }
 
 DynamixelErrorCodes DynamixelInterface::read_pos_data()
