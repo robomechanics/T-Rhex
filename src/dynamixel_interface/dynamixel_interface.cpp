@@ -217,7 +217,16 @@ void DynamixelInterface::tick()
         
         default:
         {
-            std::cerr << "Dynamixel Interface in invalid state! Errcode = " << errcode << std::endl;
+            std::cerr << "Dynamixel Interface in invalid state! Errcode = " << std::to_string(static_cast<int8_t>(errcode)) << std::endl;
+            for (int i = 0; i < NUM_LEGS; i++)
+            {
+                uint16_t vel = 0;
+                uint8_t vel_data[VEL_SET_PKT_LEN] = { DXL_LOBYTE(vel), DXL_HIBYTE(vel) };
+
+                group_sync_vel_set->addParam(leg_ids[i], vel_data);
+            }
+            uint16_t dxl_comm_res = group_sync_vel_set->txPacket();
+            group_sync_vel_set->clearParam();
             break;
         }
     }
