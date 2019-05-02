@@ -26,9 +26,22 @@ void sigint_handler ( int signum )
 
 int main(int argc, char **argv)
 {
+
+    std::string gait_file;
+    if (argc != 2)
+    {
+        std::cerr << "Usage: ./trhex <gait_file>" << std::endl;
+        return 1;
+    }
+    else
+    {
+        gait_file = std::string(argv[1]);
+    }
+    
+
     signal(SIGINT, sigint_handler);
 
-    InstructionParser instruction_parser(gait_config_file);
+    InstructionParser instruction_parser(gait_file);
     std::vector<Instruction *> instruction_set = instruction_parser.get_instruction_set();
 
     std::cout << "Read instruction file" << std::endl;
