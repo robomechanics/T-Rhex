@@ -68,6 +68,9 @@ void DynamixelInterface::tick()
 	    this->shutdown = false;
 	    this->cmd_finished = false;
 
+	    uint8_t dxl_err;
+            adapter->write2ByteTxRx(port_handler, arm_ids[0], ADDR_MX_VEL_SET, 50, &dxl_err);
+
             this->current_state = DynInterfaceState::IDLE;
 
             break;

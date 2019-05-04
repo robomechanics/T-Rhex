@@ -82,7 +82,7 @@ private:
     const uint8_t POS_SET_PKT_LEN = 2;
     const static uint8_t num_reversal = 3;
     const uint8_t reversal_ids[num_reversal] = {3, 4, 6};
-    const uint16_t leg_offsets[NUM_LEGS] = { 3621, 2254, 12, 453, 282, 3918 };
+    const uint16_t leg_offsets[NUM_LEGS] = { 3096, 147, 4065, 467, 2386, 2884 };
     const uint8_t dynamixel_ids[NUM_DYNAMIXELS] = {0, 1, 2, 3, 4, 6, 20};
     const uint8_t leg_ids[NUM_LEGS] = { 0, 1, 2, 3, 4, 6 };
     const uint8_t arm_ids[NUM_ARMS] = { 20 };
