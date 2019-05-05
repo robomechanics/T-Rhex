@@ -119,7 +119,17 @@ Instruction* InstructionParser::parse_goal_instruction(std::string instr_line)
         else
         {
             ss >> token;
-            curr_instruction->goal_positions[i] = std::stoi(token);
+            uint16_t goal_pos_deg = std::stoi(token);
+            uint16_t goal_pos_tick = (uint16_t)(goal_pos_deg * 4906 / 360);
+            curr_instruction->goal_positions[i] = goal_pos_tick;
+
+            // this is bad
+            // not safety conscious
+            // i blame matt
+            if (i > 2)
+            {
+                curr_instruction->goal_positions[i] = 4096 - goal_pos_tick;
+            }
         }
         
     }
@@ -134,7 +144,7 @@ Instruction* InstructionParser::parse_goal_instruction(std::string instr_line)
         else
         {
             ss >> token;
-	    int16_t vel = std::stoi(token);
+            int16_t vel = std::stoi(token);
             curr_instruction->goal_velocities[i] = vel;
         }
         
