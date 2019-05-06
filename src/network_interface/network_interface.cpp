@@ -54,7 +54,7 @@ NetErrorCodes NetworkSocket::open_socket()
     {
         perror("failed to accept a client connection");
         connection_active = false;
-        return;
+        return NetErrorCodes::ACCEPT_FAILED;
     }
 
     connection_active = true;
@@ -175,7 +175,10 @@ void NetworkInterface::write_inst_data()
 
 int8_t NetworkInterface::set_leg_data(uint16_t leg_data[NUM_LEGS])
 {
-    this->leg_data = leg_data;
+    for (int i = 0; i < NUM_LEGS; i++)
+    {
+        this->leg_data[i] = leg_data[i];
+    }
     return 0;
 }
 

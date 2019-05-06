@@ -13,6 +13,8 @@
 #include <thread>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "microcontroller/microcontroller.h"
 #include "config/config.h"
@@ -40,6 +42,7 @@ enum class NetErrorCodes : int8_t
     OPT_SET_FAILED = -3,
     BIND_FAILED = -4,
     LISTEN_FAILED = -5,
+    ACCEPT_FAILED = -6,
 };
 
 class NetworkSocket
