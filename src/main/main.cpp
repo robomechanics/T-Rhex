@@ -28,14 +28,29 @@ int main(int argc, char **argv)
 {
 
     std::string gait_file;
-    if (argc != 2)
+    if (argc != 2 && argc != 3)
     {
-        std::cerr << "Usage: ./trhex <gait_file>" << std::endl;
+        std::cerr << "Usage: ./trhex <gait_file> [--no-server]" << std::endl;
         return 1;
     }
     else
     {
         gait_file = std::string(argv[1]);
+    }
+
+    bool run_server = true;
+    if (argc == 3)
+    {
+        std::string server_param = std::string(argv[2]);
+        if (server_param == "--no-server")
+        {
+            run_server = false;
+        }
+        else
+        {
+            std::cerr << "Usage: ./trhex <gait_file> [--no-server]" << std::endl;
+            return 1;
+        }
     }
     
 
@@ -48,7 +63,7 @@ int main(int argc, char **argv)
 
     DynamixelInterface dynamixel_interface;
     Microcontroller microcontroller(instruction_set);
-    // NetworkInterface network_interface;
+    NetworkInterface network_interface(run_server);
 
     Instruction *micr_dyni_current_instruction;
     bool micr_dyni_execute = false;
@@ -57,6 +72,8 @@ int main(int argc, char **argv)
     uint16_t *dyni_micro_leg_data = NULL;
 
     std::cout << "Initialized" << std::endl;
+
+
 
 #if VERBOSE
     int count = 0;
@@ -108,7 +125,10 @@ int main(int argc, char **argv)
 
         // NETWORK INTERFACE
         // send inputs
+        network_interface.set_leg_data(dyni_micro_leg_data);
+        network_interface.set_current_instruction(micr_dyni_current_instruction);
         // tick
+        network_interface.tick();
         // get outputs
 
         usleep(500); // 0.5ms run loop

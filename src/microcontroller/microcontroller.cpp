@@ -147,8 +147,10 @@ Instruction* Microcontroller::get_curr_inst()
     return this->curr_ins;
 }
 
-void Microcontroller::set_leg_data(uint16_t leg_data[NUM_DYNAMIXELS])
+void Microcontroller::set_leg_data(uint16_t leg_data[NUM_LEGS])
 {
-    //TODO
-    return;
+    for (int i = 0; i < NUM_LEGS; i++)
+    {
+        this->leg_data[i] = leg_data[i];
+    }
 }

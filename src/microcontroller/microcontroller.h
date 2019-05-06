@@ -34,7 +34,7 @@ public:
     uint16_t* get_leg_data();
     Instruction* get_curr_inst();
     void set_curr_ins_finished(bool is_finished);
-    void set_leg_data(uint16_t leg_data[NUM_DYNAMIXELS]);
+    void set_leg_data(uint16_t leg_data[NUM_LEGS]);
     bool get_send_instr();
 
     Microcontroller(std::vector<Instruction*> instruction_set);
@@ -47,7 +47,7 @@ private:
     Instruction *initcmd;
     bool reinitialize;
     bool shutdown;
-    uint16_t leg_data[NUM_DYNAMIXELS];
+    uint16_t leg_data[NUM_LEGS];
     Instruction *curr_ins;
     bool curr_ins_finished;
     std::vector<Instruction *> inst_set;
