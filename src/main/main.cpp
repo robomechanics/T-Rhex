@@ -69,7 +69,11 @@ int main(int argc, char **argv)
     bool micr_dyni_execute = false;
 
     bool dyni_micr_is_finished = false;
-    uint16_t *dyni_micro_leg_data = NULL;
+    uint16_t *dyni_micro_leg_data = (uint16_t *) malloc(sizeof(uint16_t) * NUM_LEGS);
+    for (int i = 0; i < NUM_LEGS; i++)
+    {
+	    dyni_micro_leg_data[i] = 0;
+    }
 
     std::cout << "Initialized" << std::endl;
 
@@ -85,7 +89,7 @@ int main(int argc, char **argv)
         // send inputs
         microcontroller.set_leg_data(dyni_micro_leg_data);
         microcontroller.set_curr_ins_finished(dyni_micr_is_finished);
-        // tick
+	// tick
         microcontroller.tick();
         // get outputs
         micr_dyni_current_instruction = microcontroller.get_curr_inst();
