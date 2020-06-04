@@ -26,6 +26,7 @@
 TARGET      = hellodynamixel 
 TARGET2 = read_positions
 TARGET3 = tripod_gait
+TARGET4 = tail_test
 
 # important directories used by assorted rules and other variables
 DIR_DXL    = ../../DynamixelSDK/c++
@@ -38,13 +39,12 @@ CCFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall $(INCLUDES) $(FORMAT) -g
 CXFLAGS     = -O2 -O3 -DLINUX -D_GNU_SOURCE -Wall -std=c++11 $(INCLUDES) $(FORMAT) -g
 LNKCC       = $(CX)
 LNKFLAGS    = $(CXFLAGS) #-Wl,-rpath,$(DIR_THOR)/lib
-FORMAT      = -m64
 
 #---------------------------------------------------------------------
 # Core components (all of these are likely going to be needed)
 #---------------------------------------------------------------------
 INCLUDES   += -I$(DIR_DXL)/include/dynamixel_sdk
-LIBRARIES  += -ldxl_x64_cpp
+LIBRARIES  += -ldxl_sbc_cpp
 LIBRARIES  += -lrt
 
 #---------------------------------------------------------------------
@@ -53,10 +53,12 @@ LIBRARIES  += -lrt
 SOURCES = hello_dynamixel.cpp
 SOURCES2 = read_dyn_pos.cpp
 SOURCES3 = tripod_gait.cpp
+SOURCES4 = tail_control.cpp
 
 OBJECTS  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES)))))
 OBJECTS2  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES2)))))
 OBJECTS3  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES3)))))
+OBJECTS4  = $(addsuffix .o,$(addprefix $(DIR_OBJS)/,$(basename $(notdir $(SOURCES4)))))
 #OBJETCS += *** ADDITIONAL STATIC LIBRARIES GO HERE ***
 
 
@@ -71,6 +73,9 @@ $(TARGET2): make_directory $(OBJECTS2)
 
 $(TARGET3): make_directory $(OBJECTS3) 
 	$(LNKCC) $(LNKFLAGS) $(OBJECTS3) -o $(TARGET3) $(LIBRARIES)
+
+$(TARGET4): make_directory $(OBJECTS4) 
+	$(LNKCC) $(LNKFLAGS) $(OBJECTS4) -o $(TARGET4) $(LIBRARIES)
 
 all: $(TARGET)
 
